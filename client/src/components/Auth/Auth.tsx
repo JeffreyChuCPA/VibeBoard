@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import FormAlert from "../FormAlert.tsx";
 import AuthForm from "./AuthForm.tsx";
 import AuthSocial from "./AuthSocial.tsx";
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 interface FormAlertState {
   type: "error" | "success";
@@ -10,11 +10,11 @@ interface FormAlertState {
 }
 
 function Auth(props) {
-  const history = useHistory();
+  const navigate = useNavigate();
   const [formAlert, setFormAlert] = useState<FormAlertState | null>(null);
 
   const handleAuth = () => {
-    history.push(props.afterAuthPath);
+    navigate(props.afterAuthPath);
   };
 
   const handleFormAlert = (data) => {

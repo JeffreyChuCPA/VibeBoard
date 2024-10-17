@@ -42,7 +42,7 @@ function SettingsPassword(props) {
   const auth = useAuth();
   const [pending, setPending] = useState(false);
 
-  const { register, handleSubmit, errors, reset, getValues } = useForm();
+  const { register, handleSubmit, formState: {errors}, reset, getValues } = useForm();
 
   const onSubmit = (data) => {
     // Show pending indicator
@@ -86,22 +86,22 @@ function SettingsPassword(props) {
       <TextField
         type="password"
         id="pass"
-        name="pass"
+        // name="pass"
         placeholder="Password"
         label="Password"
         error={errors.pass}
-        inputRef={register({
+        {...register("pass", {
           required: "Please enter a password",
         })}
       />
       <TextField
         type="password"
         id="confirmPass"
-        name="confirmPass"
+        // name="confirmPass"
         placeholder="Confirm Password"
         label="Confirm New Password"
         error={errors.confirmPass}
-        inputRef={register({
+        {...register( "confirmPass", {
           required: "Please enter your password again",
           validate: (value) => {
             if (value === getValues().pass) {

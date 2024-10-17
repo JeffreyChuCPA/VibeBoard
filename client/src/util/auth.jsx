@@ -9,7 +9,7 @@ import queryString from "query-string";
 // import supabase from "./supabase";
 import { useUser, updateUser } from "./db";
 import PageLoader from "../components/PageLoader";
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 // Whether to merge extra user data from database into `auth.user`
 const MERGE_DB_USER = true;
@@ -259,14 +259,14 @@ export const requireAuth = (Component) => {
     // Get authenticated user
     // const auth = useAuth();
     const auth = {'user': true}
-    const history = useHistory(); // Using `useHistory` hook here
+    const navigate = useNavigate(); 
 
     useEffect(() => {
       // Redirect if not signed in
       if (auth.user === false) {
-        history.replace("/auth/signin"); // Using `history` from `useHistory` hook
+        navigate("/auth/signin", { replace: true});
       }
-    }, [auth, history]); // Add `history` to dependency array
+    }, [auth, navigate]); 
 
     // Show loading indicator
     // We're either loading (user is `null`) or about to redirect from above `useEffect` (user is `false`)

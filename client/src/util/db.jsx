@@ -2,11 +2,13 @@ import {
   QueryClient,
   QueryClientProvider as QueryClientProviderBase,
   useQuery,
-} from "react-query";
+} from "@tanstack/react-query";
 // import supabase from "./supabase";
+import axios from 'axios'
 
 // React Query client
 const client = new QueryClient();
+const API_BASE_URL = import.meta.env.VITE_BACKEND_API_URL_DEV
 
 /**** USERS ****/
 
@@ -14,15 +16,15 @@ const client = new QueryClient();
 // Note: This is called automatically in `auth.jsx` and data is merged into `auth.user`
 export function useUser(uid) {
   // Manage data fetching with React Query: https://react-query.tanstack.com/overview
-  return useQuery(
-    // Unique query key: https://react-query.tanstack.com/guides/query-keys
-    ["user", { uid }],
-    // Query function that fetches data
-    () =>
-      supabase.from("users").select(`*`).eq("id", uid).single().then(handle),
-    // Only call query function if we have a `uid`
-    { enabled: !!uid },
-  );
+  // return useQuery(
+  //   // Unique query key: https://react-query.tanstack.com/guides/query-keys
+  //   ["user", { uid }],
+  //   // Query function that fetches data
+  //   () =>
+  //     supabase.from("users").select(`*`).eq("id", uid).single().then(handle),
+  //   // Only call query function if we have a `uid`
+  //   { enabled: !!uid },
+  // );
 }
 
 // Fetch user data (non-hook)
@@ -46,9 +48,9 @@ export async function updateUser(uid, data) {
 /**** KEYBOARDS ****/
 // Get a keyboard by user id
 export function useKeyboardByUser(owner_id) {
-  return useQuery(
-    ["keyboard", { owner_id }],
-    () =>
+  return useQuery({
+    queryKey: ["keyboard", { owner_id }],
+    queryFn: () =>
       supabase
         .from("keyboard_themes")
         .select(
@@ -56,15 +58,15 @@ export function useKeyboardByUser(owner_id) {
         )
         .eq("owner", owner_id)
         .then(handle),
-    { enabled: !!owner_id },
-  );
+    enabled: !!owner_id,
+  });
 }
 
 // Get a keyboard by theme id
 export function useKeyboardByTheme(theme_id, withColors = false) {
-  return useQuery(
-    ["keyboard", { theme_id }],
-    () =>
+  return useQuery({
+    queryKey: ["keyboard", { theme_id }],
+    queryFn: () =>
       supabase
         .from("keyboard_themes")
         .select(
@@ -76,8 +78,8 @@ export function useKeyboardByTheme(theme_id, withColors = false) {
         )
         .eq("id", theme_id)
         .then(handle),
-    { enabled: !!theme_id },
-  );
+    enabled: !!theme_id ,
+  });
 }
 
 // Fetch a paginated list of keyboard themes
