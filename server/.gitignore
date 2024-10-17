@@ -1,0 +1,43 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Dependency directories
+node_modules/
+
+# TypeScript compiled files
+dist/
+
+# dotenv environment variables file
+.env
+
+# Typescript cache
+*.tsbuildinfo
+
+# IDE and editor-specific files
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# MacOS files
+.DS_Store
+
+# Optional npm cache directory
+.npm
+
+# Debugging-related files
+node_modules/
+coverage/
+
+# Ignore production build files (optional)
+build/

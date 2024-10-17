@@ -6,7 +6,7 @@ import React, {
   createContext,
 } from "react";
 import queryString from "query-string";
-import supabase from "./supabase";
+// import supabase from "./supabase";
 import { useUser, updateUser } from "./db";
 import PageLoader from "../components/PageLoader";
 import { useHistory } from "react-router-dom";
@@ -143,39 +143,43 @@ function useAuthProvider() {
   };
 
   useEffect(() => {
-    // Get hash portion of URL if coming from Supabase OAuth or magic link flow.
-    // Store on `window` so we can access in other functions after hash is removed.
-    window.lastHash = queryString.parse(window.location.hash);
+    // // Get hash portion of URL if coming from Supabase OAuth or magic link flow.
+    // // Store on `window` so we can access in other functions after hash is removed.
+    // window.lastHash = queryString.parse(window.location.hash);
 
-    // If we have an `access_token` from OAuth or magic link flow avoid using
-    // cached session so that user is `null` (loading state) until process completes.
-    // Otherwise, a redirect to a protected page after social auth will redirect
-    // right back to log in due to cached session indicating they are logged out.
-    if (!window.lastHash.access_token) {
-      supabase.auth.getSession().then(({ data: { session } }) => {
-        if (session) {
-          setUser(session.user);
-        } else {
-          setUser(false);
-        }
-      });
-    }
+    // // If we have an `access_token` from OAuth or magic link flow avoid using
+    // // cached session so that user is `null` (loading state) until process completes.
+    // // Otherwise, a redirect to a protected page after social auth will redirect
+    // // right back to log in due to cached session indicating they are logged out.
+    // if (!window.lastHash.access_token) {
+    //   supabase.auth.getSession().then(({ data: { session } }) => {
+    //     if (session) {
+    //       setUser(session.user);
+    //     } else {
+    //       setUser(false);
+    //     }
+    //   });
+    // }
 
-    // Subscribe to user on mount
-    const {
-      data: {
-        subscription: { unsubscribe },
-      },
-    } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session) {
-        setUser(session.user);
-      } else {
-        setUser(false);
-      }
-    });
+    // // Subscribe to user on mount
+    // const {
+    //   data: {
+    //     subscription: { unsubscribe },
+    //   },
+    // } = supabase.auth.onAuthStateChange((event, session) => {
+    //   if (session) {
+    //     setUser(session.user);
+    //   } else {
+    //     setUser(false);
+    //   }
+    // });
+
+    //!temp code to fill for supabase
+    const mockUser = false; // Set `null` or user data if you need to mock authentication
+    setUser(mockUser);
 
     // Unsubscribe on cleanup
-    return () => unsubscribe();
+    // return () => unsubscribe();
   }, []);
 
   return {
@@ -253,7 +257,8 @@ function useMergeExtraData(user, { enabled }) {
 export const requireAuth = (Component) => {
   return function RequireAuthHOC(props) {
     // Get authenticated user
-    const auth = useAuth();
+    // const auth = useAuth();
+    const auth = {'user': true}
     const history = useHistory(); // Using `useHistory` hook here
 
     useEffect(() => {

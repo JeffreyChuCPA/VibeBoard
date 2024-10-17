@@ -1,5 +1,5 @@
 import html2canvas from "html2canvas";
-import supabase from "./supabase.ts";
+// import supabase from "./supabase.ts";
 import { MutableRefObject } from "react";
 
 export async function generateScreenshot(

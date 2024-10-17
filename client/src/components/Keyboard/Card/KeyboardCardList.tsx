@@ -4,7 +4,7 @@ import MobileKeyboardCard from "./MobileKeyboardCard.tsx";
 import useMobile from "../../../hooks/useMobile.ts";
 
 export default function KeyboardCardList({
-  data,
+  data = [], //!to provide a default empty array
   setIsModalOpen,
   showInfo,
   setSelectedKeyboard,
@@ -15,6 +15,12 @@ export default function KeyboardCardList({
   setSelectedKeyboard?: (id: string) => void;
 }) {
   const isMobile = useMobile();
+
+  //! Optional message when no data is available
+  if (data.length === 0) {
+    return <p>No key boards available</p>
+  }
+
   return (
     <>
       {!isMobile ? (

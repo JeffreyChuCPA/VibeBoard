@@ -31,7 +31,8 @@ Usage:
 */
 
 function SettingsGeneral(props) {
-  const auth = useAuth();
+  // const auth = useAuth();
+  const auth = {'user': true}
   const [pending, setPending] = useState(false);
 
   const { register, handleSubmit, errors } = useForm();

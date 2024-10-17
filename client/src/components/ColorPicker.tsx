@@ -14,7 +14,7 @@ export default function ColorPicker({ selectedColor, setSelectedColor }) {
               key={color}
               type="button"
               className={`h-9 w-9 bg-${color} ${
-                selectedColor === color ? "ring-2 ring-red-500" : ""
+                selectedColor === color ? "ring-2 ring-slate-100" : ""
               }`}
               onClick={() => setSelectedColor(color)}
             ></button>

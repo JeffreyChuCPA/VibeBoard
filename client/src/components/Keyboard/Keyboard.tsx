@@ -110,7 +110,7 @@ function Keyboard(
             key={rowNumber}
             className={`flex space-x-[2px] ${
               rowNumber !== "1" ? "mt-[2px]" : ""
-            }`}
+            } gap-1`}
           >
             {kbr[rowNumber].map((key: KeyProps) => (
               <Key

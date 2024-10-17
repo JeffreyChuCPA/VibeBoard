@@ -13,7 +13,8 @@ import DeleteModal from "../components/DeleteModal.tsx";
 import toast from "react-hot-toast";
 
 function DashboardPage() {
-  const auth = useAuth();
+  // const auth = useAuth();
+  const auth = {'user': true}
   const { data, isLoading } = useKeyboardByUser(auth.user.id);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedKeyboard, setSelectedKeyboard] = useState("");

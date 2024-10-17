@@ -119,6 +119,47 @@ export default function DesignSection({
         { value: "light", label: "Light" },
       ],
     },
+    {
+      id: "key_base_effect",
+      name: "Base Effect",
+      onChange: () =>
+        console.log(newThemeData)
+        ,
+      defaultValue: newThemeData.keyCapColor,
+      options: [
+        { value: "single color", label: "Single Color" },
+        { value: "colorshift", label: "ColorShift" },
+        { value: "gradient", label: "Gradient" },
+        { value: "breathe", label: "Breathe" }
+      ],
+    },
+    {
+      id: "key_reactive_effect",
+      name: "Reactive Effect",
+      onChange: () =>
+        console.log(newThemeData)
+        ,
+      defaultValue: newThemeData.keyCapColor,
+      options: [
+        { value: "line", label: "Line" },
+        { value: "ripple", label: "Ripple" },
+        { value: "fade", label: "Fade" },
+      ],
+    },
+    {
+      id: "key_idle_effect",
+      name: "Idle Effect",
+      onChange: () =>
+        console.log(newThemeData)
+        ,
+      defaultValue: newThemeData.keyCapColor,
+      options: [
+        { value: "single color", label: "Single Color" },
+        { value: "colorshift", label: "ColorShift" },
+        { value: "gradient", label: "Gradient" },
+        { value: "breathe", label: "Breathe" }
+      ],
+    },
   ];
 
   return (

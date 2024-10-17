@@ -3,7 +3,7 @@ import {
   QueryClientProvider as QueryClientProviderBase,
   useQuery,
 } from "react-query";
-import supabase from "./supabase";
+// import supabase from "./supabase";
 
 // React Query client
 const client = new QueryClient();
@@ -83,14 +83,17 @@ export function useKeyboardByTheme(theme_id, withColors = false) {
 // Fetch a paginated list of keyboard themes
 export function useKeyboardPaginated(page, size = 10) {
   // const { from, to } = getPagination(page, size);
-  return useQuery(["keyboards", page, size], () =>
-    supabase
-      .from("keyboard_themes")
-      .select(
-        "id, theme_name, description, keyboard_size, keyboard_layout, platform, image_path",
-      )
-      .then(handle),
-  );
+  // return useQuery(["keyboards", page, size], () =>
+  //   supabase
+  //     .from("keyboard_themes")
+  //     .select(
+  //       "id, theme_name, description, keyboard_size, keyboard_layout, platform, image_path",
+  //     )
+  //     .then(handle),
+  // );
+
+  //!temp return
+  return []
 }
 
 export async function createKeyboardTheme(themeData, keyboardData) {

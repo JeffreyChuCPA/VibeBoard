@@ -109,6 +109,7 @@ function DesignPage() {
     );
   }
 
+  //! themeTitle and themeDesc not used anywhere in file in FE
   const resetModalInputs = () => {
     setThemeData({ ...themeData, ...{ themeTitle: "", themeDesc: "" } });
   };

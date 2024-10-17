@@ -44,7 +44,8 @@ interface SettingsSectionProps {
 }
 
 function SettingsSection(props: SettingsSectionProps) {
-  const auth = useAuth();
+  // const auth = useAuth();
+  const auth = {'user': true}
   const [formAlert, setFormAlert] = useState<FormAlertState | null>(null);
 
   const [reauthState, setReauthState] = useState<ReauthState>({

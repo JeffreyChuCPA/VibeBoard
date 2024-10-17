@@ -32,14 +32,14 @@ Renders:
 
 Routes:
 
-- / -> IndexPage
-- /dashboard -> DashboardPage
-- /design -> DesignPage
-- /auth/:type -> AuthPage
-- /trending -> TrendingPage
-- /recently-updated -> RecentlyUpdatedPage
-- /top -> TopPage
-- /settings/:section -> SettingsPage
+- / ->  //!page loads, but inner components dont show/no data
+- /dashboard -> DashboardPage //!redirects to sign in
+- /design, /keyboard/add -> DesignPage //!404, redirects to sign in
+- /auth/:type -> AuthPage //!redirects to sign in
+- /trending -> TrendingPage //!page loads, but inner components dont show/no data
+- /recently-updated -> RecentlyUpdatedPage //!page loads, but inner components dont show/no data
+- /top -> TopPage //!page loads, but inner components dont show/no data
+- /settings/:section -> SettingsPage //!redirects to sign in
 - 404 -> NotFoundPage
 
 Props:
@@ -56,7 +56,7 @@ Wraps app in providers and contains all routes.
 function App() {
   return (
     <QueryClientProvider>
-      <AuthProvider>
+      {/* <AuthProvider> */}
         <Router>
           <div
             id="page-container"
@@ -80,7 +80,8 @@ function App() {
                   path="/keyboard/:theme_id"
                   component={DetailsPage}
                 />
-                <Route exact path="/auth/:type" component={AuthPage} />
+                {/*//! any route parameter redircts here and is still shown in url */}
+                <Route exact path="/auth/:type" component={AuthPage} /> 
                 <Route exact path="/trending" component={TrendingPage} />
                 <Route
                   exact
@@ -99,7 +100,7 @@ function App() {
             <Footer />
           </div>
         </Router>
-      </AuthProvider>
+      {/* </AuthProvider> */}
     </QueryClientProvider>
   );
 }

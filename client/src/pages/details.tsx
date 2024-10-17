@@ -4,7 +4,7 @@ import { useRouter } from "../util/router.jsx";
 import { useKeyboardByTheme } from "../util/db.jsx";
 import Header from "../components/Header.tsx";
 import Spinner from "../components/Spinner.tsx";
-import supabase from "../util/supabase.ts";
+// import supabase from "../util/supabase.ts";
 import useMobile from "../hooks/useMobile.ts";
 import { KeyboardProps } from "../util/types.ts";
 import MobileDetailSection from "../components/Detail/MobileDetailSection.tsx";

@@ -40,7 +40,7 @@ function AuthPage() {
         bgImageOpacity={1}
         textColor=""
         type={router.query.type}
-        providers={["google", "facebook"]}
+        providers={["google", "facebook", "twitter", "github"]}
         afterAuthPath={router.query.next || "/dashboard"}
       />
     </>
