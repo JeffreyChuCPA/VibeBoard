@@ -8,7 +8,7 @@ import SettingsPage from "./settings";
 import RecentlyUpdatedPage from "./recently-updated.tsx";
 import TrendingPage from "./trending.tsx";
 import TopPage from "./top.tsx";
-import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import NotFoundPage from "./404";
 import Footer from "../components/Footer";
 import { inject } from "@vercel/analytics";
@@ -66,36 +66,32 @@ function App() {
               id="page-content"
               className="flex flex-auto flex-col max-w-full"
             >
-              <Switch>
-                <Route exact path="/" component={IndexPage} />
-                <Route exact path="/dashboard" component={DashboardPage} />
-                <Route exact path="/keyboard/add" component={DesignPage} />
+              <Routes>
+                <Route path="/" element={<IndexPage/>} />
+                <Route path="/dashboard" element={<DashboardPage/>} />
+                <Route path="/keyboard/add" element={<DesignPage/>} />
                 <Route
-                  exact
                   path="/keyboard/:action/:theme_id"
-                  component={DesignPage}
+                  element={<DesignPage/>}
                 />
                 <Route
-                  exact
                   path="/keyboard/:theme_id"
-                  component={DetailsPage}
+                  element={<DetailsPage/>}
                 />
                 {/*//! any route parameter redircts here and is still shown in url */}
-                <Route exact path="/auth/:type" component={AuthPage} /> 
-                <Route exact path="/trending" component={TrendingPage} />
+                <Route path="/auth/:type" element={<AuthPage/>} /> 
+                <Route path="/trending" element={<TrendingPage/>} />
                 <Route
-                  exact
                   path="/recently-updated"
-                  component={RecentlyUpdatedPage}
+                  element={<RecentlyUpdatedPage/>}
                 />
-                <Route exact path="/top" component={TopPage} />
+                <Route path="/top" element={<TopPage/>} />
                 <Route
-                  exact
                   path="/settings/:section"
-                  component={SettingsPage}
+                  element={<SettingsPage/>}
                 />
-                <Route component={NotFoundPage} />
-              </Switch>
+                <Route element={<NotFoundPage/>} />
+              </Routes>
             </main>
             <Footer />
           </div>

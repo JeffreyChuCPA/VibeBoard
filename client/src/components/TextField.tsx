@@ -1,13 +1,21 @@
 import React from "react";
 
-function TextField(props) {
+type TextFieldProps = {
+  error?: { message?: string };
+  type?: "text" | "textarea" | "email" | "password";
+  size?: "sm" | "md" | "lg";
+  label?: string;
+  className?: string;
+  id?: string;
+} & React.InputHTMLAttributes<HTMLInputElement | HTMLTextAreaElement>;
+
+const TextField = React.forwardRef<HTMLInputElement | HTMLTextAreaElement, TextFieldProps>((props, ref) => {
   const {
     error,
     type = "text",
     size = "md",
     label,
     className,
-    inputRef,
     ...inputProps
   } = props;
 
@@ -31,7 +39,7 @@ function TextField(props) {
       {type === "textarea" && (
         <textarea
           className={`${classes.base} ${classes.size[size]}`}
-          ref={inputRef}
+          ref={ref as React.Ref<HTMLTextAreaElement>}
           {...inputProps}
         />
       )}
@@ -39,7 +47,7 @@ function TextField(props) {
       {type !== "textarea" && (
         <input
           className={`${classes.base} ${classes.size[size]}`}
-          ref={inputRef}
+          ref={ref as React.Ref<HTMLInputElement>}
           type={type}
           {...inputProps}
         />
@@ -50,6 +58,8 @@ function TextField(props) {
       )}
     </div>
   );
-}
+})
+
+TextField.displayName = "TextField"; // Set the display name
 
 export default TextField;

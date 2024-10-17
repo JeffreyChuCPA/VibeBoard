@@ -9,8 +9,8 @@ import {
   Router as RouterOriginal,
   useParams,
   useLocation,
-  useHistory,
-  useRouteMatch,
+  useNavigate,
+  // useMatch,
 } from "react-router-dom";
 import queryString from "query-string";
 
@@ -37,8 +37,8 @@ export function Router({ children }) {
 export function useRouter() {
   const params = useParams();
   const location = useLocation();
-  const history = useHistory();
-  const match = useRouteMatch();
+  const navigate = useNavigate();
+  // const match = useMatch();
 
   // Return our custom router object
   // Memoize so that a new object is only returned if something changes
@@ -46,8 +46,8 @@ export function useRouter() {
     return {
       params,
       location,
-      history,
-      match,
+      navigate,
+      // match,
       // For convenience add push(), replace(), pathname at top level
       push: history.push,
       replace: history.replace,
@@ -60,7 +60,7 @@ export function useRouter() {
         ...params,
       },
     };
-  }, [params, match, location, history]);
+  }, [params, location]);
 }
 
 // Remove or customize if you need more advanced scroll behavior
@@ -75,11 +75,10 @@ function ScrollToTop() {
 
 export {
   Route,
-  Switch,
   Link,
   NavLink,
   useParams,
   useLocation,
-  useHistory,
-  useRouteMatch,
+  useNavigate,
+  // useMatch,
 } from "react-router-dom";

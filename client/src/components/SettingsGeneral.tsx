@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import TextField from "./TextField";
 import Button from "./Button";
 import LoadingIcon from "./LoadingIcon";
-import { useAuth } from "../util/auth.jsx";
+// import { useAuth } from "../util/auth.jsx";
 
 /*
 SettingsGeneral component handles updating user profile.
@@ -32,10 +32,10 @@ Usage:
 
 function SettingsGeneral(props) {
   // const auth = useAuth();
-  const auth = {'user': true}
+  const auth = { user: { name: 'John Doe', email: 'john.doe@example.com' } }
   const [pending, setPending] = useState(false);
 
-  const { register, handleSubmit, errors } = useForm();
+  const { register, handleSubmit, formState: {errors}  } = useForm();
 
   const onSubmit = (data) => {
     // Show pending indicator
@@ -76,26 +76,22 @@ function SettingsGeneral(props) {
       <TextField
         type="text"
         id="name"
-        name="name"
+        // name="name"
         placeholder="Name"
         label="Name"
         defaultValue={auth.user.name}
         error={errors.name}
-        inputRef={register({
-          required: "Please enter your name",
-        })}
+        {...register("name", {required: "Please enter your name"})}
       />
       <TextField
         type="email"
         id="email"
-        name="email"
+        // name="email"
         placeholder="Email"
         label="Email"
         defaultValue={auth.user.email}
         error={errors.email}
-        inputRef={register({
-          required: "Please enter your email",
-        })}
+        {...register("email", { required: "Please enter your email" })} 
       />
       <Button
         type="submit"
