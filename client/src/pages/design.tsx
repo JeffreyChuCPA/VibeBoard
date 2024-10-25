@@ -102,7 +102,7 @@ function DesignPage() {
         keyboard_size: themeData.keyboardSize,
         keyboard_layout: themeData.keyboardLayout,
         platform: themeData.platform,
-        owner: auth.user.id,
+        owner: auth.user.uid,
         image_path: imagePath,
       },
       keyboardColors,
@@ -130,7 +130,7 @@ function DesignPage() {
     try {
       const screenshotBlob: Blob = await generateScreenshot(keyboardRef);
       const imagePath: string = await uploadScreenshot(
-        `${auth.user.id}?t=${new Date().getTime()}`, //https://github.com/orgs/supabase/discussions/5737
+        `${auth.user.uid}?t=${new Date().getTime()}`, //https://github.com/orgs/supabase/discussions/5737
         screenshotBlob,
       );
       await createTheme(imagePath);

@@ -47,12 +47,20 @@ export async function updateUser(uid, data) {
 
 /**** KEYBOARDS ****/
 // Get all keyboards by user id
-export function useKeyboardByUser(owner_id) {
+export function useKeyboardByUser(auth, owner_id) {
   return useQuery({
     queryKey: ["keyboard", { owner_id }],
-    queryFn: () =>
-      axios.get(`${API_BASE_URL}/keyboard_themes?owner=${owner_id}`)
-        .then(handle),
+    queryFn: async () => {
+      const token = await auth.getFirebaseIdToken()
+      console.log(token);
+      
+      return axios.get(`${API_BASE_URL}/keyboard_themes?owner=${owner_id}`, {
+        headers: {
+          Authorization: token
+        }
+      })
+        .then(handle)
+    },
       // supabase
       //   .from("keyboard_themes")
       //   .select(
@@ -123,7 +131,7 @@ export async function createKeyboardTheme(themeData, keyboardData) {
   }))
 
   return await axios
-    .post(`${API_BASE_URL}/keyboard_themes_keys`, keyboardDataWithThemeId)
+    .post(`${API_BASE_URL}/keyboard_themes/add/keyboard_themes_keys`, keyboardDataWithThemeId)
     .then(handle)
   // const response = await supabase
   //   .from("keyboard_themes")
@@ -164,6 +172,8 @@ export async function deleteItem(theme_id, owner_id) {
 
 // Get response data or throw error if there is one
 function handle(response) {
+  console.log('error');
+  
   if (response.error) throw response.error;
   return response.data;
 }

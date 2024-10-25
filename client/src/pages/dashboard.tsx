@@ -13,15 +13,14 @@ import DeleteModal from "../components/DeleteModal.tsx";
 import toast from "react-hot-toast";
 
 function DashboardPage() {
-  // const auth = useAuth();
-  const auth = {'user': true}
-  const { data, isLoading } = useKeyboardByUser(auth.user.id);
+  const auth = useAuth();
+  const { data, isLoading } = useKeyboardByUser(auth, auth.user.uid);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedKeyboard, setSelectedKeyboard] = useState("");
 
   const handleDelete = () => {
     console.log("Deleting keyboard...");
-    deleteItem(selectedKeyboard, auth.user.id)
+    deleteItem(selectedKeyboard, auth.user.uid)
       .then(() => toast.success("Keyboard successfully deleted."))
       .catch((error: { message: any }) =>
         toast.error(`Error while deleting keyboard: ${error.message}`),

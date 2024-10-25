@@ -1,15 +1,22 @@
 import React, { useState } from "react";
-import { useForm } from "react-hook-form";
+import { SubmitHandler, useForm } from "react-hook-form";
 import TextField from "../TextField.tsx";
 import Button from "../Button.tsx";
 import LoadingIcon from "../LoadingIcon.tsx";
 import { useAuth } from "../../util/auth.jsx";
+import { getErrorMessage } from "../../util/error.ts";
+
+interface AuthFormValues {
+  email: string;
+  pass?: string; // Optional because it might not be needed in some forms
+  confirmPass?: string; // Optional
+}
 
 function AuthForm(props) {
   const auth = useAuth();
 
   const [pending, setPending] = useState(false);
-  const { handleSubmit, register, errors, getValues } = useForm();
+  const { handleSubmit, register, formState: { errors }, getValues } = useForm<AuthFormValues>();
 
   const submitHandlersByType = {
     signin: ({ email, pass }) => {
@@ -25,7 +32,7 @@ function AuthForm(props) {
       });
     },
     forgotpass: ({ email }) => {
-      return auth.sendPasswordResetEmail(email).then(() => {
+      return auth.sendPasswordResetEmailFunction(email).then(() => {
         setPending(false);
         // Show success alert message
         props.onFormAlert({
@@ -34,8 +41,9 @@ function AuthForm(props) {
         });
       });
     },
+    //TODO !need to pass oobCode param
     changepass: ({ pass }) => {
-      return auth.confirmPasswordReset(pass).then(() => {
+      return auth.confirmPasswordResetFunction(pass).then(() => {
         setPending(false);
         // Show success alert message
         props.onFormAlert({
@@ -47,7 +55,8 @@ function AuthForm(props) {
   };
 
   // Handle form submission
-  const onSubmit = ({ email, pass }) => {
+  const onSubmit: SubmitHandler<AuthFormValues> = ({ email, pass }) => {
+    
     // Show pending indicator
     setPending(true);
 
@@ -56,11 +65,12 @@ function AuthForm(props) {
       email,
       pass,
     }).catch((error) => {
+
       setPending(false);
       // Show error alert message
       props.onFormAlert({
         type: "error",
-        message: error.message,
+        message: getErrorMessage(error.code),
       });
     });
   };
@@ -71,12 +81,9 @@ function AuthForm(props) {
         <TextField
           type="email"
           id="email"
-          name="email"
           placeholder="Email"
           error={errors.email}
-          inputRef={register({
-            required: "Please enter an email address",
-          })}
+          {...register("email", { required: "Please enter your email" })} 
         />
       )}
 
@@ -84,10 +91,9 @@ function AuthForm(props) {
         <TextField
           type="password"
           id="pass"
-          name="pass"
           placeholder="Password"
           error={errors.pass}
-          inputRef={register({
+          {...register("pass", {
             required: "Please enter a password",
           })}
         />
@@ -97,10 +103,9 @@ function AuthForm(props) {
         <TextField
           type="password"
           id="confirmPass"
-          name="confirmPass"
           placeholder="Confirm Password"
           error={errors.confirmPass}
-          inputRef={register({
+          {...register( "confirmPass", {
             required: "Please enter your password again",
             validate: (value) => {
               if (value === getValues().pass) {
