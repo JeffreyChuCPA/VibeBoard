@@ -172,7 +172,7 @@ export async function deleteItem(theme_id, owner_id) {
 
 // Get response data or throw error if there is one
 function handle(response) {
-  console.log('error');
+  console.log(response);
   
   if (response.error) throw response.error;
   return response.data;
