@@ -39,19 +39,19 @@ router.get('/', verifyToken, async (req: Request, res: Response) => {
 })
 
 router.get('/:theme_ID', verifyToken, async (req: Request, res: Response) => {
-  const id = req.params.theme_ID
-  const withColors = req.query.withColors
+  const { themeID } = req.params
+  const withColors = req.query.withColors === 'true'
 
-  console.log(`Keybord Theme ID: ${id}`);
+  console.log(`Keybord Theme ID: ${themeID}`);
   console.log(`withColors: ${withColors}`);
 
-  if (id && withColors) {
-    res.status(200).json({ message: `Fetching specific keyboard with color`})
-  } else if (id && !withColors) {
-    res.status(200).json({ message: `Fetching specific keyboard without color`})
-  } else {
+  if (!themeID) {
     res.status(400).json({ message: `Specific keyboard not identified`})
   }
+
+  const responseMessage = `Fetching specific keyboard ${withColors ? 'with' : 'without'} color`
+
+  res.status(200).json({ message: `${responseMessage}`})
 
   //!implement logic to fetch and send specific keyboard and the specific colors
   // supabase
@@ -68,25 +68,27 @@ router.get('/:theme_ID', verifyToken, async (req: Request, res: Response) => {
 })
 
 router.post('/add', verifyToken, async (req: Request, res: Response) => {
-  const {
-    theme_name,
-    description,
-    keyboard_color,
-    key_cap_color,
-    keyboard_shape,
-    keyboard_size,
-    keyboard_layout,
-    platform,
-    owner,
-    image_path,
-  } = req.body
+  const requiredFields: string[] = [
+    'theme_name',
+    'description',
+    'keyboard_color',
+    'key_cap_color',
+    'keyboard_shape',
+    'keyboard_size',
+    'keyboard_layout',
+    'platform',
+    'owner',
+    'image_path',
+  ]
 
-  console.log('Posted keyboard')
-  if (theme_name && description && keyboard_color && key_cap_color && keyboard_shape && keyboard_size && keyboard_layout && platform && owner && image_path) {
-    res.status(200).json({ message: `Posted keyboard`, id: crypto.randomUUID()})
-  } else (
+  const hasAllFields: boolean = requiredFields.every(field => req.body[field])
+
+  if (!hasAllFields) {
     res.status(400).json({ message: `Unable to post keyboard`})
-  )
+  }
+  
+  console.log('Posted keyboard')
+  res.status(200).json({ message: `Posted keyboard`, id: crypto.randomUUID()})
 
   //!implement logic to post keyboard and to return an ID in response
   // supabase
@@ -97,13 +99,15 @@ router.post('/add', verifyToken, async (req: Request, res: Response) => {
 })
 
 router.post('/add/keyboard_theme_keys', verifyToken, async (req: Request, res: Response) => {
-  const { key_id, key_label_color, theme_id } = req.body
+  const requiredFields =  [ 'key_id', 'key_label_color', 'theme_id' ]
+  const hasAllFields = requiredFields.every(field => req.body[field])
 
-  if (key_id && key_label_color && theme_id) {
-    res.status(200).json({ message: `Posted keyboard data with Theme ID: ${theme_id}`})
-  } else (
+  if (!hasAllFields) {
     res.status(400).json({ message: `Unable to post keyboard key data`})
-  )
+  }
+
+  const { theme_ID } = req.body
+  res.status(200).json({ message: `Posted keyboard data with Theme ID: ${theme_ID}`})
 })
 
 router.delete('/:theme_ID', verifyToken, async (req: Request, res: Response) => {

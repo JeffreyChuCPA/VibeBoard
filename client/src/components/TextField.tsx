@@ -2,7 +2,7 @@ import React from "react";
 
 type TextFieldProps = {
   error?: { message?: string };
-  type?: "text" | "textarea" | "email" | "password";
+  type?: "text" | "textarea" | "email" | "password" | 'oobCode';
   size?: "sm" | "md" | "lg";
   label?: string;
   className?: string;

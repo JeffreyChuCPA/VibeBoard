@@ -1,13 +1,12 @@
 import React, {
   useState,
   useEffect,
-  useMemo,
   useContext,
   createContext,
 } from 'react';
 // import queryString from "query-string";
 // import supabase from "./supabase";
-import { useUser, updateUser } from './db';
+import { updateUser } from './db';
 import PageLoader from '../components/PageLoader';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -45,48 +44,30 @@ function useAuthProvider() {
   console.log(user);
 
   // Handle response from auth functions (`signup`, `signin`, and `signinWithProvider`)
-  //!whats the point of this
   const handleAuth = async (user) => {
-
     // Update user in state
     setUser(user);
     return user;
   };
 
   const signup = async (email, password) => {
-    try {
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        email,
-        password,
-      );
+    const userCredential = await createUserWithEmailAndPassword(
+      auth,
+      email,
+      password,
+    );
 
-      await handleAuth(userCredential.user);
-    } catch (error) {
-      handleError(error);
-    }
-    // return supabase.auth
-    //   .signUp({ email, password })
-    //   .then(handleError)
-    //   .then(handleAuth);
+    await handleAuth(userCredential.user);
   };
 
   const signin = async (email, password) => {
-    try {
-      const userCredential = await signInWithEmailAndPassword(
-        auth,
-        email,
-        password,
-      );
+    const userCredential = await signInWithEmailAndPassword(
+      auth,
+      email,
+      password,
+    );
 
-      await handleAuth(userCredential.user);
-    } catch (error) {
-      handleError(error);
-    }
-    // return supabase.auth
-    //   .signInWithPassword({ email, password })
-    //   .then(handleError)
-    //   .then(handleAuth);
+    await handleAuth(userCredential.user);
   };
 
   const signinWithProvider = async (name) => {
@@ -104,16 +85,9 @@ function useAuthProvider() {
         throw new Error(`Provider ${name} is not supported`);
     }
 
-    try {
-      await signInWithPopup(auth, provider);
+    await signInWithPopup(auth, provider);
+    window.location.href = `${window.location.origin}/dashboard`;
 
-      window.location.href = `${window.location.origin}/dashboard`;
-    } catch (error) {
-      console.log('Error signing in with provider', error.message);
-      handleError(error);
-    }
-
-    return new Promise(() => null);
 
     // return (
     //   supabase.auth
@@ -146,19 +120,21 @@ function useAuthProvider() {
 
   const signout = async () => {
     signOut(auth)
+      .then(() => {
+        window.location.href = `${window.location.origin}/auth/signin`
+      })
       .catch((error) => {
-        handleAuth(error);
+        throw error
       });
     // return supabase.auth.signOut().then(handleError);
   };
 
   const sendPasswordResetEmailFunction = async (email) => {
     return sendPasswordResetEmail(auth, email, {
-      url: `${window.location.origin}/auth/changepass`,
+      url: `${window.location.origin}/auth/signin`,
     })
-      .then(handleError)
       .catch((error) => {
-        handleError(error);
+        throw error
       });
     // return supabase.auth
     //   .resetPasswordForEmail(email, {
@@ -168,24 +144,17 @@ function useAuthProvider() {
   };
 
   const confirmPasswordResetFunction = async (oobCode, password) => {
-    try {
-      await confirmPasswordReset(auth, oobCode, password);
-      console.log(`Password reset successful`);
-    } catch (error) {
-      handleError(error);
-    }
+
+    await confirmPasswordReset(auth, oobCode, password);
+    console.log(`Password reset successful`);
     // return supabase.auth.updateUser({ password }).then(handleError);
   };
 
   const updatePasswordFunction = async (password) => {
     const user = auth.currentUser;
 
-    try {
-      await updatePassword(user, password);
-      console.log('Password updated successfully');
-    } catch (error) {
-      handleError(error);
-    }
+    await updatePassword(user, password);
+    console.log('Password updated successfully');
     // return supabase.auth.updateUser({ password }).then(handleError);
   };
 
@@ -195,21 +164,18 @@ function useAuthProvider() {
     const { email, ...other } = data;
     const user = auth.currentUser;
 
-    try {
-      if (email && email !== user.email) {
-        await updateEmail(user, email);
-        throw new Error(
-          'To complete this process click the confirmation links sent to your new and old email addresses',
-        );
-      }
-
-      // Persist all other data to the database
-      if (Object.keys(other).length > 0) {
-        await updateUser(user.uid, other);
-      }
-    } catch (error) {
-      handleError(error);
+    if (email && email !== user.email) {
+      await updateEmail(user, email);
+      throw new Error(
+        'To complete this process click the confirmation links sent to your new and old email addresses',
+      );
     }
+
+    // Persist all other data to the database
+    if (Object.keys(other).length > 0) {
+      await updateUser(user.uid, other);
+    }
+  
   };
 
   const getFirebaseIdToken = async () => {
@@ -276,8 +242,3 @@ export const requireAuth = (Component) => {
   };
 };
 
-// Throw error from auth response, so it can be caught and displayed by UI
-function handleError(error) {
-  if (error) throw error;
-  return error;
-}

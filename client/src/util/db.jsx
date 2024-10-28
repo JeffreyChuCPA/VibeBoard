@@ -191,7 +191,7 @@ export function QueryClientProvider(props) {
 //! to test if logic is correct for pagination of keyboards. Implementation of pagination is currently hard coded
 const getPagination = (page, size) => {
   const limit = size ? +size : 3;
-  const from = page ? page * limit : 0;
+  const from = page ? (page - 1) * limit : 0;
   const to = page ? from + size : size;
 
   return { from, to };

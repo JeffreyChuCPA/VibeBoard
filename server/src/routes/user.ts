@@ -3,14 +3,12 @@ import express, { Request, Response, Router } from "express"
 const router: Router = express.Router()
 
 router.get('/:uid', async (req: Request, res: Response) => {
-  const uid = req.params.uid
-
-  console.log(`User with ID: ${uid}`);
+  const { uid } = req.params
   
-  if (uid) {
+  try {
     res.status(200).json({ message: `Fetching user with ID: ${uid}`})
-  } else {
-    res.status(400).json({ message: `Unable to fetch user with ID: ${uid}`})
+  } catch (error) {
+    res.status(400).json({ message: `Unable to fetch user with ID: ${uid}`, error: error})
   }
 
   //!implement logic to fetch and send user data
@@ -18,14 +16,20 @@ router.get('/:uid', async (req: Request, res: Response) => {
 })
 
 router.put('/:uid', async (req: Request, res: Response) => {
-  const uid = req.params.uid
-  const data = req.body
+  const { uid } = req.params
+  const updateData = req.body
 
-  if (uid && data) {
-    res.status(200).json({ message: `Updated ${data} for user with ID: ${uid}`})
-  } else {
-    res.status(400).json({message: `Unable to update ${data} for user with ID: ${uid}`})
+  if (!updateData || Object.keys(updateData).length === 0) {
+    res.status(400).json({ message: `No update data provided`})
   }
+
+  try {
+    res.status(200).json({ message: `Updated ${updateData} for user with ID: ${uid}`})
+    
+  } catch (error) {
+    res.status(400).json({message: `Unable to update ${updateData} for user with ID: ${uid}`, error: error})    
+  }
+
 
   //!implement logic to update and send user data
   // const response = await supabase

@@ -10,6 +10,7 @@ interface AuthFormValues {
   email: string;
   pass?: string; // Optional because it might not be needed in some forms
   confirmPass?: string; // Optional
+  oobCode?: string // Optional as needed only for confirmPasswordReset
 }
 
 function AuthForm(props) {
@@ -41,9 +42,8 @@ function AuthForm(props) {
         });
       });
     },
-    //TODO !need to pass oobCode param
-    changepass: ({ pass }) => {
-      return auth.confirmPasswordResetFunction(pass).then(() => {
+    changepass: ({ oobCode, pass }) => {
+      return auth.confirmPasswordResetFunction(oobCode, pass).then(() => {
         setPending(false);
         // Show success alert message
         props.onFormAlert({
@@ -55,7 +55,7 @@ function AuthForm(props) {
   };
 
   // Handle form submission
-  const onSubmit: SubmitHandler<AuthFormValues> = ({ email, pass }) => {
+  const onSubmit: SubmitHandler<AuthFormValues> = ({ email, pass, oobCode }) => {
     
     // Show pending indicator
     setPending(true);
@@ -64,6 +64,7 @@ function AuthForm(props) {
     submitHandlersByType[props.type]({
       email,
       pass,
+      oobCode
     }).catch((error) => {
 
       setPending(false);
@@ -117,6 +118,18 @@ function AuthForm(props) {
           })}
         />
       )}
+
+      {["changepass"].includes(props.type) && (
+              <TextField
+                type="oobCode"
+                id="oobCode"
+                placeholder="Code from Email"
+                error={errors.pass}
+                {...register("oobCode", {
+                  required: "Please provide the confirmation code from email",
+                })}
+              />
+            )}
 
       <Button type="submit" size="lg" disabled={pending} isBlock={true}>
         {pending && <LoadingIcon className="w-6" />}
