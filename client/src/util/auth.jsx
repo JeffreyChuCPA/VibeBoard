@@ -88,35 +88,7 @@ function useAuthProvider() {
     await signInWithPopup(auth, provider);
     window.location.href = `${window.location.origin}/dashboard`;
 
-
-    // return (
-    //   supabase.auth
-    //     .signInWithOAuth({
-    //       provider: name,
-    //       options: {
-    //         redirectTo: `${window.location.origin}/dashboard`,
-    //       },
-    //     })
-    //     .then(handleError)
-    //     // Because `signInWithOAuth` resolves immediately we need to add this so that
-    //     // it never resolves (component will display loading indicator indefinitely).
-    //     // Once social signin is completed the page will redirect to value of `redirectTo`.
-    //     .then(() => {
-    //       return new Promise(() => null);
-    //     })
-    // );
   };
-
-  // const signinWithMagicLink = (email) => {
-  //   return supabase.auth
-  //     .signInWithOtp({
-  //       email,
-  //       options: {
-  //         emailRedirectTo: `${window.location.origin}/dashboard`,
-  //       },
-  //     })
-  //     .then(handleError);
-  // };
 
   const signout = async () => {
     signOut(auth)
@@ -126,40 +98,35 @@ function useAuthProvider() {
       .catch((error) => {
         throw error
       });
-    // return supabase.auth.signOut().then(handleError);
   };
 
   const sendPasswordResetEmailFunction = async (email) => {
     return sendPasswordResetEmail(auth, email, {
       url: `${window.location.origin}/auth/signin`,
+      handleCodeInApp: true,
     })
       .catch((error) => {
         throw error
       });
-    // return supabase.auth
-    //   .resetPasswordForEmail(email, {
-    //     redirectTo: `${window.location.origin}/auth/changepass`,
-    //   })
-    //   .then(handleError);
   };
 
-  const confirmPasswordResetFunction = async (oobCode, password) => {
-
-    await confirmPasswordReset(auth, oobCode, password);
-    console.log(`Password reset successful`);
-    // return supabase.auth.updateUser({ password }).then(handleError);
+  //! in prod, change the Action URL that redirects the email link. Currently added as http://localhost:3000/auth/changepass 
+  const confirmPasswordResetFunction = async (password, oobCode) => {
+    await confirmPasswordReset(auth, oobCode, password)
+    window.location.href = `${window.location.origin}/auth/signin`
   };
 
+  //!not implemented to be called by user yet
   const updatePasswordFunction = async (password) => {
     const user = auth.currentUser;
 
     await updatePassword(user, password);
     console.log('Password updated successfully');
-    // return supabase.auth.updateUser({ password }).then(handleError);
   };
 
   // Update auth user and persist data to database
   // Call this function instead of multiple auth/db update functions
+  //!not implemented to actually handle the changed data correctly. Settings page still WIP
   const updateProfile = async (data) => {
     const { email, ...other } = data;
     const user = auth.currentUser;

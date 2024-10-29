@@ -5,6 +5,7 @@ import Button from "../Button.tsx";
 import LoadingIcon from "../LoadingIcon.tsx";
 import { useAuth } from "../../util/auth.jsx";
 import { getErrorMessage } from "../../util/error.ts";
+import useTargetParams from "../../hooks/useTargetParams.ts";
 
 interface AuthFormValues {
   email: string;
@@ -17,7 +18,7 @@ function AuthForm(props) {
   const auth = useAuth();
 
   const [pending, setPending] = useState(false);
-  const { handleSubmit, register, formState: { errors }, getValues } = useForm<AuthFormValues>();
+  const { handleSubmit, register, formState: { errors }, getValues, setValue } = useForm<AuthFormValues>();
 
   const submitHandlersByType = {
     signin: ({ email, pass }) => {
@@ -42,8 +43,8 @@ function AuthForm(props) {
         });
       });
     },
-    changepass: ({ oobCode, pass }) => {
-      return auth.confirmPasswordResetFunction(oobCode, pass).then(() => {
+    changepass: ({ pass, oobCode }) => {
+      return auth.confirmPasswordResetFunction(pass, oobCode).then(() => {
         setPending(false);
         // Show success alert message
         props.onFormAlert({
@@ -53,6 +54,13 @@ function AuthForm(props) {
       });
     },
   };
+
+  if (props.type === 'changepass') {
+    const oobCode = useTargetParams('oobCode')
+    console.log(oobCode);
+    setValue("oobCode", oobCode || undefined)
+  }
+  
 
   // Handle form submission
   const onSubmit: SubmitHandler<AuthFormValues> = ({ email, pass, oobCode }) => {
@@ -118,18 +126,6 @@ function AuthForm(props) {
           })}
         />
       )}
-
-      {["changepass"].includes(props.type) && (
-              <TextField
-                type="oobCode"
-                id="oobCode"
-                placeholder="Code from Email"
-                error={errors.pass}
-                {...register("oobCode", {
-                  required: "Please provide the confirmation code from email",
-                })}
-              />
-            )}
 
       <Button type="submit" size="lg" disabled={pending} isBlock={true}>
         {pending && <LoadingIcon className="w-6" />}
