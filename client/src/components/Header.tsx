@@ -22,8 +22,7 @@ const inactive =
   "group text-sm font-medium flex items-center space-x-2 px-3 py-2 rounded-lg text-gray-800 border border-transparent hover:text-blue-600 hover:bg-blue-50 active:border-blue-100 dark:text-gray-200 dark:hover:text-white dark:hover:bg-gray-700 dark:active:border-gray-600";
 
 export default function Header() {
-  // const auth = useAuth();
-  const auth = {'user': true}
+  const auth = useAuth();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const location = useLocation();
   const currentRoute = location.pathname;
@@ -120,7 +119,7 @@ export default function Header() {
                 <div className="dark">
                   <Menu.Button className="inline-flex justify-center items-center space-x-2 border font-semibold rounded-lg px-3 py-2 leading-5 text-sm border-gray-200 bg-white text-gray-800 hover:border-gray-300 hover:text-gray-900 hover:shadow-sm focus:ring focus:ring-gray-300 focus:ring-opacity-25 active:border-gray-200 active:shadow-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:border-gray-600 dark:hover:text-gray-200 dark:focus:ring-gray-600 dark:focus:ring-opacity-40 dark:active:border-gray-700">
                     <UserCircleIcon className="inline-block w-5 h-5" />
-                    <span className="hidden sm:inline">{auth.user.name}</span>
+                    <span className="hidden sm:inline">{auth.displayName}</span>
                     <ChevronDownIcon className="w-5 h-5 opacity-40 hidden sm:inline-block" />
                   </Menu.Button>
                 </div>

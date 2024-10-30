@@ -1,18 +1,29 @@
 import React, {
   useState,
   useEffect,
-  useMemo,
   useContext,
   createContext,
-} from "react";
-import queryString from "query-string";
+} from 'react';
+// import queryString from "query-string";
 // import supabase from "./supabase";
-import { useUser, updateUser } from "./db";
-import PageLoader from "../components/PageLoader";
-import { useNavigate } from "react-router-dom";
+import { updateUser } from './db';
+import PageLoader from '../components/PageLoader';
+import { useNavigate } from 'react-router-dom';
+import {
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signOut,
+  sendPasswordResetEmail,
+  confirmPasswordReset,
+  updatePassword,
+  updateEmail,
+  onAuthStateChanged,
+  signInWithPopup,
+  GoogleAuthProvider,
+  GithubAuthProvider,
+} from 'firebase/auth';
+import { auth } from '../util/firebase'
 
-// Whether to merge extra user data from database into `auth.user`
-const MERGE_DB_USER = true;
 
 // Create a `useAuth` hook and `AuthProvider` that enables
 // any component to subscribe to auth and re-render when it changes.
@@ -30,243 +41,157 @@ function useAuthProvider() {
   // Store auth user in state
   // `user` will be an object, `null` (loading) or `false` (logged out)
   const [user, setUser] = useState(null);
-
-  // Merge extra user data from the database
-  // This means extra user data (such as payment plan) is available as part
-  // of `auth.user` and doesn't need to be fetched separately. Convenient!
-  let finalUser = useMergeExtraData(user, { enabled: MERGE_DB_USER });
-
-  // Add custom fields and formatting to the `user` object
-  finalUser = useFormatUser(finalUser);
+  console.log(user);
 
   // Handle response from auth functions (`signup`, `signin`, and `signinWithProvider`)
-  const handleAuth = async (response) => {
-    const {
-      data: { user },
-    } = response;
-
-    // If email is unconfirmed throw error to be displayed in UI
-    // The user will be confirmed automatically if email confirmation is disabled in Supabase settings
-    if (!user.email_confirmed_at) {
-      throw new Error(
-        "Thanks for signing up! Please check your email to complete the process.",
-      );
-    }
-
+  const handleAuth = async (user) => {
     // Update user in state
     setUser(user);
     return user;
   };
 
-  const signup = (email, password) => {
-    return supabase.auth
-      .signUp({ email, password })
-      .then(handleError)
-      .then(handleAuth);
-  };
-
-  const signin = (email, password) => {
-    return supabase.auth
-      .signInWithPassword({ email, password })
-      .then(handleError)
-      .then(handleAuth);
-  };
-
-  const signinWithProvider = (name) => {
-    return (
-      supabase.auth
-        .signInWithOAuth({
-          provider: name,
-          options: {
-            redirectTo: `${window.location.origin}/dashboard`,
-          },
-        })
-        .then(handleError)
-        // Because `signInWithOAuth` resolves immediately we need to add this so that
-        // it never resolves (component will display loading indicator indefinitely).
-        // Once social signin is completed the page will redirect to value of `redirectTo`.
-        .then(() => {
-          return new Promise(() => null);
-        })
+  const signup = async (email, password) => {
+    const userCredential = await createUserWithEmailAndPassword(
+      auth,
+      email,
+      password,
     );
+
+    await handleAuth(userCredential.user);
   };
 
-  const signinWithMagicLink = (email) => {
-    return supabase.auth
-      .signInWithOtp({
-        email,
-        options: {
-          emailRedirectTo: `${window.location.origin}/dashboard`,
-        },
-      })
-      .then(handleError);
+  const signin = async (email, password) => {
+    const userCredential = await signInWithEmailAndPassword(
+      auth,
+      email,
+      password,
+    );
+
+    await handleAuth(userCredential.user);
   };
 
-  const signout = () => {
-    return supabase.auth.signOut().then(handleError);
+  const signinWithProvider = async (name) => {
+
+    let provider;
+
+    switch (name) {
+      case 'google':
+        provider = new GoogleAuthProvider();
+        break;
+      case 'github':
+        provider = new GithubAuthProvider();
+        break;
+      default:
+        throw new Error(`Provider ${name} is not supported`);
+    }
+
+    await signInWithPopup(auth, provider);
+    window.location.href = `${window.location.origin}/dashboard`;
+
   };
 
-  const sendPasswordResetEmail = (email) => {
-    return supabase.auth
-      .resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth/changepass`,
-      })
-      .then(handleError);
+  const signout = async () => {
+    await signOut(auth)
+    window.location.href = `${window.location.origin}/auth/signin`
+  }
+
+  const sendPasswordResetEmailFunction = async (email) => {
+    return sendPasswordResetEmail(auth, email, {
+      url: `${window.location.origin}/auth/signin`,
+      handleCodeInApp: true,
+    })
+      .catch((error) => {
+        throw error
+      });
   };
 
-  const confirmPasswordReset = (password) => {
-    return supabase.auth.updateUser({ password }).then(handleError);
+  //! in prod, change the Action URL that redirects the email link. Currently added as http://localhost:3000/auth/changepass 
+  const confirmPasswordResetFunction = async (password, oobCode) => {
+    await confirmPasswordReset(auth, oobCode, password)
+    window.location.href = `${window.location.origin}/auth/signin`
   };
 
-  const updatePassword = (password) => {
-    return supabase.auth.updateUser({ password }).then(handleError);
+  //!not implemented to be called by user yet
+  const updatePasswordFunction = async (password) => {
+    const user = auth.currentUser;
+
+    await updatePassword(user, password);
+    console.log('Password updated successfully');
   };
 
   // Update auth user and persist data to database
   // Call this function instead of multiple auth/db update functions
+  //!not implemented to actually handle the changed data correctly. Settings page still WIP
   const updateProfile = async (data) => {
     const { email, ...other } = data;
+    const user = auth.currentUser;
 
-    // If email changed let them know to click the confirmation links
-    // Will be persisted to the database by our Supabase trigger once process is completed
     if (email && email !== user.email) {
-      await supabase.auth.updateUser({ email }).then(handleError);
+      await updateEmail(user, email);
       throw new Error(
-        "To complete this process click the confirmation links sent to your new and old email addresses",
+        'To complete this process click the confirmation links sent to your new and old email addresses',
       );
     }
 
     // Persist all other data to the database
     if (Object.keys(other).length > 0) {
-      await updateUser(user.id, other);
+      await updateUser(user.uid, other);
     }
+  
   };
 
+  const getFirebaseIdToken = async () => {
+    const currentUser = auth.currentUser
+
+    if (currentUser) {
+      const token = await currentUser.getIdToken()
+      return token
+    } else {
+      throw new Error("User is not authenticated");
+    }
+  }
+
   useEffect(() => {
-    // // Get hash portion of URL if coming from Supabase OAuth or magic link flow.
-    // // Store on `window` so we can access in other functions after hash is removed.
-    // window.lastHash = queryString.parse(window.location.hash);
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      if (currentUser) {
+        
+        setUser(currentUser);
+      } else {
+        setUser(false);
+      }
+    });
 
-    // // If we have an `access_token` from OAuth or magic link flow avoid using
-    // // cached session so that user is `null` (loading state) until process completes.
-    // // Otherwise, a redirect to a protected page after social auth will redirect
-    // // right back to log in due to cached session indicating they are logged out.
-    // if (!window.lastHash.access_token) {
-    //   supabase.auth.getSession().then(({ data: { session } }) => {
-    //     if (session) {
-    //       setUser(session.user);
-    //     } else {
-    //       setUser(false);
-    //     }
-    //   });
-    // }
-
-    // // Subscribe to user on mount
-    // const {
-    //   data: {
-    //     subscription: { unsubscribe },
-    //   },
-    // } = supabase.auth.onAuthStateChange((event, session) => {
-    //   if (session) {
-    //     setUser(session.user);
-    //   } else {
-    //     setUser(false);
-    //   }
-    // });
-
-    //!temp code to fill for supabase
-    const mockUser = false; // Set `null` or user data if you need to mock authentication
-    setUser(mockUser);
-
-    // Unsubscribe on cleanup
-    // return () => unsubscribe();
+    return () => unsubscribe();
   }, []);
 
   return {
-    user: finalUser,
+    user,
     signup,
     signin,
     signinWithProvider,
-    signinWithMagicLink,
     signout,
-    sendPasswordResetEmail,
-    confirmPasswordReset,
-    updatePassword,
+    sendPasswordResetEmailFunction,
+    confirmPasswordResetFunction,
+    updatePasswordFunction,
     updateProfile,
+    getFirebaseIdToken
   };
-}
-
-function useFormatUser(user) {
-  // Memoize so returned object has a stable identity
-  return useMemo(() => {
-    // Return if auth user is `null` (loading) or `false` (not authenticated)
-    if (!user) return user;
-
-    // Create an array of user's auth providers by id (["password", "google", etc])
-    // Components can read this to prompt user to re-auth with the correct provider
-    let provider = user.app_metadata.provider;
-    // Supabase calls it "email", but our components expect "password"
-    if (provider === "email") provider = "password";
-    const providers = [provider];
-
-    return {
-      // Include full auth user data
-      ...user,
-      // Alter the names of some fields
-      uid: user.id,
-      // User's auth providers
-      providers: providers,
-    };
-  }, [user]);
-}
-
-function useMergeExtraData(user, { enabled }) {
-  // Get extra user data from database
-  const { data, status, error } = useUser(enabled && user && user.id);
-
-  // Memoize so returned object has a stable identity
-  return useMemo(() => {
-    // If disabled or no auth user (yet) then just return
-    if (!enabled || !user) return user;
-
-    switch (status) {
-      case "success":
-        // If successful, but `data` is `null`, that means user just signed up and the `createUser`
-        // function hasn't populated the db yet. Return `null` to indicate auth is still loading.
-        // The above call to `useUser` will re-render things once the data comes in.
-        if (data === null) return null;
-        // Return auth `user` merged with extra user `data`
-        return { ...user, ...data };
-      case "error":
-        // Uh oh. Lets at least show a helpful error.
-        throw new Error(`
-          Error: ${error.message}
-          This happened while attempting to fetch extra user data from the database
-          to include with the authenticated user. Make sure the database is setup or
-          disable merging extra user data by setting MERGE_DB_USER to false.
-        `);
-      default:
-        // We have an `idle` or `loading` status so return `null`
-        // to indicate that auth is still loading.
-        return null;
-    }
-  }, [user, enabled, data, status, error]);
 }
 
 // A Higher Order Component for requiring authentication
 export const requireAuth = (Component) => {
   return function RequireAuthHOC(props) {
     // Get authenticated user
-    // const auth = useAuth();
-    const auth = {'user': true}
-    const navigate = useNavigate(); 
+    const auth = useAuth();
+    // const auth = { user: true };
+    const navigate = useNavigate();
 
     useEffect(() => {
       // Redirect if not signed in
       if (auth.user === false) {
-        navigate("/auth/signin", { replace: true});
+        navigate('/auth/signin', { replace: true });
       }
-    }, [auth, navigate]); 
+    }, [auth, navigate]);
 
     // Show loading indicator
     // We're either loading (user is `null`) or about to redirect from above `useEffect` (user is `false`)
@@ -279,8 +204,3 @@ export const requireAuth = (Component) => {
   };
 };
 
-// Throw error from auth response, so it can be caught and displayed by UI
-function handleError(response) {
-  if (response.error) throw response.error;
-  return response;
-}

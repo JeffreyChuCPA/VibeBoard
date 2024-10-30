@@ -46,3 +46,7 @@ export const lorem = new LoremIpsum({
     min: 4,
   },
 });
+
+export const getQueryParams = (search: string): URLSearchParams => {
+  return new URLSearchParams(search)
+}

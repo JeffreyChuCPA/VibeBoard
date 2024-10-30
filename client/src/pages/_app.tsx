@@ -56,7 +56,7 @@ Wraps app in providers and contains all routes.
 function App() {
   return (
     <QueryClientProvider>
-      {/* <AuthProvider> */}
+      <AuthProvider>
         <Router>
           <div
             id="page-container"
@@ -96,7 +96,7 @@ function App() {
             <Footer />
           </div>
         </Router>
-      {/* </AuthProvider> */}
+      </AuthProvider>
     </QueryClientProvider>
   );
 }

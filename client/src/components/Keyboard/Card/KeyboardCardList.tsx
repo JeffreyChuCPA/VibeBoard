@@ -16,8 +16,8 @@ export default function KeyboardCardList({
 }) {
   const isMobile = useMobile();
 
-  //! Optional message when no data is available
-  if (data.length === 0) {
+  //! Optional message when no data is available, temporary plug
+  if (data.length === 0 || data.message) {
     return <p>No key boards available</p>
   }
 
