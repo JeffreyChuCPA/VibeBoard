@@ -91,14 +91,9 @@ function useAuthProvider() {
   };
 
   const signout = async () => {
-    signOut(auth)
-      .then(() => {
-        window.location.href = `${window.location.origin}/auth/signin`
-      })
-      .catch((error) => {
-        throw error
-      });
-  };
+    await signOut(auth)
+    window.location.href = `${window.location.origin}/auth/signin`
+  }
 
   const sendPasswordResetEmailFunction = async (email) => {
     return sendPasswordResetEmail(auth, email, {
