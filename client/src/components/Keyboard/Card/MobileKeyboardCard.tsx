@@ -1,4 +1,3 @@
-// import supabase from "../../../util/supabase.ts";
 import { KeyboardProps } from "../../../util/types.ts";
 import { HeartIcon, ShareIcon } from "@heroicons/react/24/solid";
 import { PlusIcon } from "@heroicons/react/20/solid";
@@ -12,9 +11,6 @@ export default function MobileKeyboardCard({
 }: {
   keyboard: KeyboardProps;
 }) {
-  const { data } = supabase.storage
-    .from("keyboards")
-    .getPublicUrl(keyboard.image_path);
 
   return (
     <>
@@ -31,9 +27,9 @@ export default function MobileKeyboardCard({
           </p>
         </div>
       </div>
-      {data && (
+      {keyboard.image_path && (
         <Link to={`/keyboard/${keyboard.id}`}>
-          <KeyboardCarousel image={data.publicUrl} />
+          <KeyboardCarousel image={keyboard.image_path} />
         </Link>
       )}
       <div className="px-4 py-2 mb-10 flex text-left items-center justify-between">

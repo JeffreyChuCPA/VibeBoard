@@ -52,22 +52,14 @@ export function useKeyboardByUser(auth, owner_id) {
     queryKey: ["keyboard", { owner_id }],
     queryFn: async () => {
       const token = await auth.getFirebaseIdToken()
-      console.log(token);
       
-      return axios.get(`${API_BASE_URL}/keyboard_themes?owner=${owner_id}`, {
+      return await axios.get(`${API_BASE_URL}/keyboard_themes/owner`, {
         headers: {
           Authorization: token
         }
       })
         .then(handle)
     },
-      // supabase
-      //   .from("keyboard_themes")
-      //   .select(
-      //     "id, theme_name, description, keyboard_size, keyboard_layout, platform, image_path",
-      //   )
-      //   .eq("owner", owner_id)
-      //   .then(handle),
     enabled: !!owner_id,
   });
 }
@@ -76,20 +68,9 @@ export function useKeyboardByUser(auth, owner_id) {
 export function useKeyboardByTheme(theme_id, withColors = false) {
   return useQuery({
     queryKey: ["keyboard", { theme_id }],
-    queryFn: () =>
-      axios.get(`${API_BASE_URL}/keyboard_themes/:${theme_id}${withColors ? '?withColors=true' : ''}`)
+    queryFn: async () =>
+      await axios.get(`${API_BASE_URL}/keyboard_themes/${theme_id}${withColors ? '?withColors=true' : ''}`)
       .then(handle),
-      // supabase
-      //   .from("keyboard_themes")
-      //   .select(
-      //     `id, theme_name, description, key_cap_color, keyboard_color, keyboard_shape, keyboard_size, keyboard_layout, platform, image_path, owner${
-      //       withColors
-      //         ? ", keyboard_theme_keys ( key_id, key_label_color )"
-      //         : ""
-      //     }`,
-      //   )
-      //   .eq("id", theme_id)
-      //   .then(handle),
     enabled: !!theme_id ,
   });
 }
@@ -99,72 +80,42 @@ export function useKeyboardPaginated(page, size = 10) {
   const { from, to } = getPagination(page, size);
   return useQuery({
     queryKey: ["keyboards", page, size], 
-    queryFn: () =>
-      axios
+    queryFn: async () =>
+      await axios
         .get(`${API_BASE_URL}/keyboard_themes`, {
           params: { from, to }
         })
         .then(handle),
         enabled: !!page
-
-    // supabase
-    //   .from("keyboard_themes")
-    //   .select(
-    //     "id, theme_name, description, keyboard_size, keyboard_layout, platform, image_path",
-    //   )
-    //   .then(handle),
   });
-
-  //!temp return
-  // return []
 }
 
-export async function createKeyboardTheme(themeData, keyboardData) {
+export async function createKeyboardTheme(themeData, keyboardColors) {
   const themeResponse = await axios
-    .post(`${API_BASE_URL}/keyboard_themes/add`, themeData)
+    .post(`${API_BASE_URL}/keyboard_themes/add/keyboard_theme`, themeData)
     .then(handle)
 
   const themeId = themeResponse.id
-  const keyboardDataWithThemeId = keyboardData.map((kd) => ({
+  const keyboardDataWithThemeId = keyboardColors.map((kd) => ({
     ...kd,
     theme_id: themeId
   }))
 
   return await axios
-    .post(`${API_BASE_URL}/keyboard_themes/add/keyboard_themes_keys`, keyboardDataWithThemeId)
+    .post(`${API_BASE_URL}/keyboard_themes/add/keyboard_theme_keys`, keyboardDataWithThemeId)
     .then(handle)
-  // const response = await supabase
-  //   .from("keyboard_themes")
-  //   .upsert(themeData, { onConflict: "theme_name" })
-  //   .select()
-  //   .then(handle);
-
-  // const { id: themeId } = response[0];
-  // const keyboardDataWithThemeId = keyboardData.map((kd) => ({
-  //   ...kd,
-  //   theme_id: themeId,
-  // }));
-
-  // return await supabase
-  //   .from("keyboard_theme_keys")
-  //   .upsert(keyboardDataWithThemeId)
-  //   .then(handle);
-
-  // Invalidate and refetch queries that could have old data
-  // await client.invalidateQueries(["items"]);
 }
 
-export async function deleteItem(theme_id, owner_id) {
+export async function deleteItem(auth, theme_id) {
+  const token = await auth.getFirebaseIdToken()
   const response = axios
-    .delete(`${API_BASE_URL}/keyboard_themes/:${theme_id}`)
+    .delete(`${API_BASE_URL}/keyboard_themes/${theme_id}`, {
+      headers: {
+        Authorization: token
+      }
+    })
     .then(handle)
-  // const response = await supabase
-  //   .from("keyboard_themes")
-  //   .delete()
-  //   .eq("id", id)
-  //   .then(handle);
-  // Invalidate and refetch queries that could have old data
-  await Promise.all([client.invalidateQueries(["keyboard", { owner_id }])]);
+
   return response;
 }
 
@@ -172,9 +123,13 @@ export async function deleteItem(theme_id, owner_id) {
 
 // Get response data or throw error if there is one
 function handle(response) {
-  console.log(response);
+  console.log(response.data);
   
-  if (response.error) throw response.error;
+  if (response.error) {
+    throw response.error;
+  } else if (response.data.result) {
+    return response.data.result
+  }
   return response.data;
 }
 

@@ -7,7 +7,7 @@ import { win_65 } from "../components/Keyboard/Layout/win_65.ts";
 import DesignModal from "../components/Design/DesignModal.tsx";
 import { createKeyboardTheme, useKeyboardByTheme } from "../util/db.jsx";
 import { ErrorResponse, KeyboardProps, KeyProps } from "../util/types.ts";
-import { generateScreenshot, uploadScreenshot } from "../util/screenshot.ts";
+import { generateScreenshot } from "../util/screenshot.ts";
 import toast from "react-hot-toast";
 import Toast from "../components/Toast.tsx";
 import { useRouter } from "../util/router.jsx";
@@ -92,6 +92,21 @@ function DesignPage() {
         return { key_id, key_label_color };
       });
 
+      console.log({
+        theme_name: themeData.themeName,
+        description: themeData.description,
+        keyboard_color: themeData.keyboardColor,
+        key_cap_color: themeData.keyCapColor,
+        keyboard_shape: themeData.keyboardShape,
+        keyboard_size: themeData.keyboardSize,
+        keyboard_layout: themeData.keyboardLayout,
+        platform: themeData.platform,
+        owner: auth.user.uid,
+        image_path: imagePath,
+      });
+
+      console.log(keyboardColors);
+
     await createKeyboardTheme(
       {
         theme_name: themeData.themeName,
@@ -128,11 +143,7 @@ function DesignPage() {
 
   const handleSave = async () => {
     try {
-      const screenshotBlob: Blob = await generateScreenshot(keyboardRef);
-      const imagePath: string = await uploadScreenshot(
-        `${auth.user.uid}?t=${new Date().getTime()}`, //https://github.com/orgs/supabase/discussions/5737
-        screenshotBlob,
-      );
+      const imagePath: string = await generateScreenshot(keyboardRef);
       await createTheme(imagePath);
       handleSuccessfulSubmission();
     } catch (err) {

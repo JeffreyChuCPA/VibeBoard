@@ -4,7 +4,6 @@ import { useRouter } from "../util/router.jsx";
 import { useKeyboardByTheme } from "../util/db.jsx";
 import Header from "../components/Header.tsx";
 import Spinner from "../components/Spinner.tsx";
-// import supabase from "../util/supabase.ts";
 import useMobile from "../hooks/useMobile.ts";
 import { KeyboardProps } from "../util/types.ts";
 import MobileDetailSection from "../components/Detail/MobileDetailSection.tsx";
@@ -31,20 +30,17 @@ function DetailsPage() {
     );
   }
 
-  const keyboard: KeyboardProps = data[0];
-  const {
-    data: { publicUrl },
-  } = supabase.storage.from("keyboards").getPublicUrl(keyboard.image_path);
+  const keyboard: KeyboardProps = data;
 
   return (
     <>
       <Header />
       <Meta title={`VibeBoard - ${keyboard.theme_name}`} />
-      {isMobile && publicUrl ? (
-        <MobileDetailSection keyboard={keyboard} image={publicUrl} />
+      {isMobile && keyboard.image_path ? (
+        <MobileDetailSection keyboard={keyboard} image={keyboard.image_path} />
       ) : (
         <div className={"container xl:max-w-7xl mx-auto px-4 lg:px-8"}>
-          <DesktopDetailSection keyboard={keyboard} publicUrl={publicUrl} />
+          <DesktopDetailSection keyboard={keyboard} publicUrl={keyboard.image_path} />
         </div>
       )}
     </>
