@@ -105,8 +105,6 @@ function DesignPage() {
         image_path: imagePath,
       });
 
-      console.log(keyboardColors);
-
     await createKeyboardTheme(
       {
         theme_name: themeData.themeName,

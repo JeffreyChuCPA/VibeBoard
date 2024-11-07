@@ -21,6 +21,8 @@ app.get('/', (req: Request, res: Response) => {
   res.send('Server is running...')
 })
 
+if (process.env.NODE_ENV !== 'test')  {
+  app.listen(PORT, () => console.log(`Server is live on http://localhost:${PORT}`))
+}
 
-
-app.listen(PORT, () => console.log(`Server is live on http://localhost:${PORT}`))
+export { app }

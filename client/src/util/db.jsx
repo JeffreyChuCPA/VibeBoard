@@ -82,7 +82,7 @@ export function useKeyboardPaginated(page, size = 10) {
     queryKey: ["keyboards", page, size], 
     queryFn: async () =>
       await axios
-        .get(`${API_BASE_URL}/keyboard_themes`, {
+        .get(`${API_BASE_URL}/keyboard_themes/keyboards`, {
           params: { from, to }
         })
         .then(handle),
@@ -123,8 +123,6 @@ export async function deleteItem(auth, theme_id) {
 
 // Get response data or throw error if there is one
 function handle(response) {
-  console.log(response.data);
-  
   if (response.error) {
     throw response.error;
   } else if (response.data.result) {

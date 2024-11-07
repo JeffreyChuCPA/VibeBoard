@@ -90,7 +90,7 @@ function App() {
                   path="/settings/:section"
                   element={<SettingsPage/>}
                 />
-                <Route element={<NotFoundPage/>} />
+                <Route path='*' element={<NotFoundPage/>} />
               </Routes>
             </main>
             <Footer />
