@@ -36,7 +36,7 @@ function DetailsPage() {
     <>
       <Header />
       <Meta title={`VibeBoard - ${keyboard.theme_name}`} />
-      {isMobile && keyboard.image_path ? (
+      {isMobile ? (
         <MobileDetailSection keyboard={keyboard} image={keyboard.image_path} />
       ) : (
         <div className={"container xl:max-w-7xl mx-auto px-4 lg:px-8"}>
