@@ -41,9 +41,6 @@ export default function DesktopKeyboardCard({
 }) {
   const location = useLocation();
   const currentRoute = location.pathname;
-  const { data } = supabase.storage
-    .from("keyboards")
-    .getPublicUrl(keyboard.image_path);
 
   return (
     <>
@@ -65,9 +62,9 @@ export default function DesktopKeyboardCard({
         </div>
 
         <div>
-          {data && (
+          {keyboard.image_path && (
             <Link to={`/keyboard/${keyboard.id}`}>
-              <img alt={"#"} src={data.publicUrl} className={"w-full h-full"} />
+              <img alt={"#"} src={keyboard.image_path} className={"w-full h-full"} />
             </Link>
           )}
         </div>

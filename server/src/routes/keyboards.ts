@@ -1,73 +1,161 @@
-import express, { Request, Response, Router } from "express";
-import verifyToken from "../middleware/auth";
+import express, { Request, Response, Router } from 'express';
+import verifyToken from '../middleware/auth';
+import { PrismaClient } from '@prisma/client';
+import { sizeEnumMapping } from '../util/helper';
+import { KeyboardThemeKey } from '../util/types';
 
-const router: Router = express.Router()
+const prisma = new PrismaClient();
 
-router.get('/', verifyToken, async (req: Request, res: Response) => {
-  const { from, to, owner} = req.query
-  const user = res.locals.user
+const router: Router = express.Router();
 
-  console.log(user);
-  
+router.get('/', async (req: Request, res: Response) => {
+  res.status(400).json({ message: 'Specific keyboard not identified' });
+  return
+});
 
-  if (owner) {
-    console.log(`Owner ID: ${owner}`);
-    res.status(200).json({ message: `Fetching keyboard themes for owner ${owner}` })
-  } else if (from && to) {
-    console.log(`Keyboards from ${from} to ${to}`);
-    res.status(200).json({ message: `Fetching keyboards from ${from} to ${to}`})
-  } else {
-    res.status(400).json({ message: `No valid filters provided`})
+router.delete('/', async (req: Request, res: Response) => {
+  res.status(400).json({ message: 'Specific keyboard not identified' });
+  return
+});
+
+router.get('/owner', verifyToken, async (req: Request, res: Response) => {
+  const user = res.locals.user;
+
+  if (!user.uid) {
+    res.status(400).json({ message: `No owner ID provided` });
+    return
   }
+
+  try {
+    const userKeyboards = await prisma.keyboard_themes.findMany({
+      where: {
+        owner: user.uid,
+      },
+      select: {
+        id: true,
+        theme_name: true,
+        description: true,
+        keyboard_size: true,
+        keyboard_layout: true,
+        platform: true,
+        image_path: true,
+      },
+    });
   
-  //!implement logic to fetch and send keyboard data based on ownerID
-  //supabase
-      //   .from("keyboard_themes")
-      //   .select(
-      //     "id, theme_name, description, keyboard_size, keyboard_layout, platform, image_path",
-      //   )
-      //   .eq("owner", owner_id)
-      //   .then(handle),
+    const result = userKeyboards.map((keyboard) => ({
+      ...keyboard,
+      image_path: keyboard.image_path
+        ? `data:image/png;base64,${keyboard.image_path.toString('base64')}`
+        : null,
+    }));
+  
+    res.status(200).json({ result });
+    
+  } catch (error) {
+    console.error('Error occurred:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+    return
+  }
+});
 
-  //!implement logic to fetch and send paginated keyboard data
-   // supabase
-    //   .from("keyboard_themes")
-    //   .select(
-    //     "id, theme_name, description, keyboard_size, keyboard_layout, platform, image_path",
-    //   )
-    //   .then(handle),
-})
+router.get('/keyboards', async (req: Request, res: Response) => {
+  const { from, to } = req.query;
 
-router.get('/:theme_ID', verifyToken, async (req: Request, res: Response) => {
-  const { themeID } = req.params
-  const withColors = req.query.withColors === 'true'
+  if (!from || !to) {
+    res.status(400).json({ message: `No valid filters provided` });
+    return;
+  }
 
-  console.log(`Keybord Theme ID: ${themeID}`);
+  try {
+    const publicKeyboards = await prisma.keyboard_themes.findMany({
+      select: {
+        id: true,
+        theme_name: true,
+        description: true,
+        keyboard_size: true,
+        keyboard_layout: true,
+        platform: true,
+        image_path: true,
+      },
+    });
+  
+    const result = publicKeyboards.map((keyboard) => ({
+      ...keyboard,
+      image_path: keyboard.image_path
+        ? `data:image/png;base64,${keyboard.image_path.toString('base64')}`
+        : null,
+    }));
+  
+    res.status(200).json({ result });
+    return;
+
+  } catch (error) {
+    console.error('Error occurred:', error)
+    res.status(500).json({ message: 'Internal Server Error'})
+    return
+  }
+});
+
+router.get('/:theme_id', async (req: Request, res: Response) => {
+  const { theme_id } = req.params;
+  const withColors = req.query.withColors === 'true';
+
+  console.log(`Keyboard Theme ID: ${theme_id}`);
   console.log(`withColors: ${withColors}`);
 
-  if (!themeID) {
-    res.status(400).json({ message: `Specific keyboard not identified`})
+  try {
+    const specificKeyboard = await prisma.keyboard_themes.findUnique({
+      where: {
+        id: theme_id,
+      },
+      select: {
+        id: true,
+        theme_name: true,
+        description: true,
+        key_cap_color: true,
+        keyboard_color: true,
+        keyboard_shape: true,
+        keyboard_size: true,
+        keyboard_layout: true,
+        platform: true,
+        image_path: true,
+        owner: true,
+        ...(withColors && {
+          keyboard_theme_keys: {
+            select: {
+              key_id: true,
+              key_label_color: true,
+            },
+          },
+        }),
+      },
+    });
+  
+    if (!specificKeyboard) {
+      res
+        .status(404)
+        .json({ message: `Keyboard theme with ID ${theme_id} not found` });
+      return;
+    }
+  
+    const result = {
+      ...specificKeyboard,
+      image_path: specificKeyboard.image_path
+        ? `data:image/png;base64,${specificKeyboard.image_path.toString('base64')}`
+        : null,
+    };
+  
+    res.status(200).json({ result });
+    return;
+    
+  } catch (error) {
+    console.error('Error occurred:', error)
+    res.status(500).json({ message: 'Internal Server Error'})
+    return
   }
+});
 
-  const responseMessage = `Fetching specific keyboard ${withColors ? 'with' : 'without'} color`
-
-  res.status(200).json({ message: `${responseMessage}`})
-
-  //!implement logic to fetch and send specific keyboard and the specific colors
-  // supabase
-      //   .from("keyboard_themes")
-      //   .select(
-      //     `id, theme_name, description, key_cap_color, keyboard_color, keyboard_shape, keyboard_size, keyboard_layout, platform, image_path, owner${
-      //       withColors
-      //         ? ", keyboard_theme_keys ( key_id, key_label_color )"
-      //         : ""
-      //     }`,
-      //   )
-      //   .eq("id", theme_id)
-      //   .then(handle),
-})
-
-router.post('/add', verifyToken, async (req: Request, res: Response) => {
+router.post('/add/keyboard_theme', async (req: Request, res: Response) => {
   const requiredFields: string[] = [
     'theme_name',
     'description',
@@ -79,47 +167,158 @@ router.post('/add', verifyToken, async (req: Request, res: Response) => {
     'platform',
     'owner',
     'image_path',
-  ]
+  ];
 
-  const hasAllFields: boolean = requiredFields.every(field => req.body[field])
+  const {
+    theme_name,
+    description,
+    keyboard_color,
+    key_cap_color,
+    keyboard_shape,
+    keyboard_size,
+    keyboard_layout,
+    platform,
+    owner,
+    image_path,
+  } = req.body;
+
+  const hasAllFields: boolean = requiredFields.every(
+    (field) => req.body[field],
+  );
 
   if (!hasAllFields) {
-    res.status(400).json({ message: `Unable to post keyboard`})
+    res.status(400).json({ message: `Unable to post keyboard` });
+    return;
   }
+
+  const base64Image = image_path.replace(/^data:image\/\w+;base64,/, '');
+  const binaryData = Buffer.from(base64Image, 'base64');
+
+  try {
+    const createdKeyboardTheme = await prisma.keyboard_themes.upsert({
+      where: { theme_name: theme_name },
+      update: {
+        theme_name: theme_name,
+        description: description,
+        keyboard_color: keyboard_color,
+        key_cap_color: key_cap_color,
+        keyboard_shape: keyboard_shape,
+        keyboard_size: sizeEnumMapping(keyboard_size),
+        keyboard_layout: keyboard_layout,
+        platform: platform,
+        owner: owner,
+        image_path: binaryData,
+      },
+      create: {
+        theme_name: theme_name,
+        description: description,
+        keyboard_color: keyboard_color,
+        key_cap_color: key_cap_color,
+        keyboard_shape: keyboard_shape,
+        keyboard_size: sizeEnumMapping(keyboard_size),
+        keyboard_layout: keyboard_layout,
+        platform: platform,
+        owner: owner,
+        image_path: binaryData,
+      },
+    });
+
+    console.log('Posted keyboard');
+    res.status(200).json({ id: createdKeyboardTheme.id });
+    return;
+  } catch (error) {
+    console.error('Error creating keyboard theme:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+    return;
+  }
+});
+
+//request body passes an array of objects, with specific keys: 'key_id', 'key_label_color', 'theme_id'
+router.post('/add/keyboard_theme_keys', async (req: Request, res: Response) => {
+  const requiredFields = ['key_id', 'key_label_color', 'theme_id'];
+  const body = req.body as KeyboardThemeKey[];
+
+  const isValidRequest =
+    Array.isArray(body) &&
+    body.every((obj) => requiredFields.every((key) => key in obj));
+
+  if (!isValidRequest) {
+    res
+      .status(400)
+      .json({
+        message: `Unable to post keyboard key data due to invalid format`,
+      });
+    return;
+  }
+
+  const { theme_id } = body[0];
+  try {
+    for (const data of body) {
+      await prisma.keyboard_theme_keys.upsert({
+        where: {
+          theme_id_key_id: {
+            theme_id: data.theme_id,
+            key_id: data.key_id,
+          },
+        },
+        update: {
+          key_label_color: data.key_label_color,
+        },
+        create: {
+          theme_id: data.theme_id,
+          key_id: data.key_id,
+          key_label_color: data.key_label_color,
+        },
+      });
+    }
+
+    res
+      .status(200)
+      .json({ message: `Posted keyboard data with Theme ID: ${theme_id}` });
+    return;
+  } catch (error) {
+    console.error('Error creating keyboard theme keys:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+    return;
+  }
+});
+
+router.delete('/:theme_id', verifyToken, async (req: Request, res: Response) => {
+  const { theme_id } = req.params;
+  const user = res.locals.user;
+
+  if (!user.uid) {
+    res.status(400).json({ message: `No owner ID provided` });
+    return
+  }
+
+  try {
+    const deletedKeyboardTheme = await prisma.keyboard_themes.delete({
+      where: {
+        owner: user.uid,
+        id: theme_id,
+      },
+    });
   
-  console.log('Posted keyboard')
-  res.status(200).json({ message: `Posted keyboard`, id: crypto.randomUUID()})
-
-  //!implement logic to post keyboard and to return an ID in response
-  // supabase
-  // .from("keyboard_themes")
-  // .upsert(themeData, { onConflict: "theme_name" })
-  // .select()
-  // .then(handle);
-})
-
-router.post('/add/keyboard_theme_keys', verifyToken, async (req: Request, res: Response) => {
-  const requiredFields =  [ 'key_id', 'key_label_color', 'theme_id' ]
-  const hasAllFields = requiredFields.every(field => req.body[field])
-
-  if (!hasAllFields) {
-    res.status(400).json({ message: `Unable to post keyboard key data`})
+    await prisma.keyboard_theme_keys.deleteMany({
+      where: {
+        theme_id: theme_id
+      }
+    })
+  
+    console.log(`Deleted keyboard of ID: ${theme_id}`);
+    res
+      .status(200)
+      .json({
+        message: `Deleted keyboard of ID: ${theme_id}`,
+        data: deletedKeyboardTheme,
+      });
+      return
+  } catch (error) {
+    console.error('Error deleting keyboard', error);
+    res.status(500).json({ message: 'Internal Server Error: Unable to delete keyboard' });
+    return;
   }
+});
 
-  const { theme_ID } = req.body
-  res.status(200).json({ message: `Posted keyboard data with Theme ID: ${theme_ID}`})
-})
-
-router.delete('/:theme_ID', verifyToken, async (req: Request, res: Response) => {
-  const id = req.params.theme_ID
-
-  if (id) {
-    console.log(`Deleted keyboard of ID: ${id}`);
-    res.status(200).json({ message: `Deleted keyboard of ID: ${id}`})
-  } else (
-    res.status(400).json({ message: `Unable to delete keyboard`})
-  )
-})
-
-
-export default router
+export default router;

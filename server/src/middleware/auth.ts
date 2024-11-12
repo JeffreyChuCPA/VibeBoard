@@ -3,16 +3,9 @@ import admin from 'firebase-admin'
 
 const verifyToken = async (req: Request, res: Response, next: NextFunction) => {
   const idToken = req.headers.authorization || ''
-  const { owner_id } = req.body
-  console.log(idToken);
-  console.log(owner_id);
-  
-  if (!idToken && !owner_id) {
-    return next();
-  }
 
-  if (!idToken && owner_id) {
-    res.status(401).json({ error: 'Unauthorized: Token required for ownerID access'})
+  if (!idToken) {
+    res.status(401).json({ error: 'Unauthorized: No token provided'})
     return
   }
 

@@ -1,0 +1,108 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model collections {
+  id                   String                 @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  created_at           DateTime               @default(now()) @db.Timestamptz(6)
+  owner                String                 @db.Uuid
+  name                 String?
+  visibility           visibility_enum
+  keyboard_collections keyboard_collections[]
+
+  @@unique([name, owner], map: "unique_name_owner")
+}
+
+model colors {
+  color_name String  @id @db.VarChar(255)
+  color_hex  String? @db.VarChar(7)
+}
+
+model key_mappings {
+  key_name            String                @db.VarChar(50)
+  key_id              String                @id @unique
+  keyboard_theme_keys keyboard_theme_keys[]
+  keyboard_types      keyboard_types[]
+}
+
+model keyboard_collections {
+  id              BigInt           @id @default(autoincrement())
+  created_at      DateTime         @default(now()) @db.Timestamptz(6)
+  theme_id        String?          @db.Uuid
+  collection_id   String           @db.Uuid
+  collections     collections      @relation(fields: [collection_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  keyboard_themes keyboard_themes? @relation(fields: [theme_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model keyboard_theme_keys {
+  theme_id        String          @db.Uuid
+  key_id          String
+  key_label_color String?
+  key_mappings    key_mappings    @relation(fields: [key_id], references: [key_id], onDelete: NoAction, onUpdate: NoAction)
+  keyboard_themes keyboard_themes @relation(fields: [theme_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([theme_id, key_id])
+}
+
+model keyboard_themes {
+  id                   String                 @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  theme_name           String                 @unique
+  description          String?
+  keyboard_size        size_enum
+  keyboard_layout      layout_enum
+  owner                String                 @db.VarChar
+  created_at           DateTime?              @default(now()) @db.Timestamptz(6)
+  platform             os_enum?
+  image_path           Bytes?
+  keyboard_shape       String?
+  keyboard_color       String?
+  key_cap_color        String?
+  keyboard_collections keyboard_collections[]
+  keyboard_theme_keys  keyboard_theme_keys[]
+}
+
+model keyboard_types {
+  id           Int           @id
+  size         size_enum?
+  key_id       String?
+  platform     os_enum?
+  key_mappings key_mappings? @relation(fields: [key_id], references: [key_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+enum layout_enum {
+  QWERTY
+  DVORAK
+  COLEMAK
+  WORKMAN
+  AZERTY
+}
+
+enum os_enum {
+  mac
+  win
+}
+
+enum size_enum {
+  keys_40  @map("40_keys")
+  keys_60  @map("60_keys")
+  keys_65  @map("65_keys")
+  keys_75  @map("75_keys")
+  keys_80  @map("80_keys")
+  keys_87  @map("87_keys")
+  keys_104 @map("104_keys")
+  keys_108 @map("108_keys")
+  keys_120 @map("120_keys")
+  ortho_40 @map("40_ortho")
+  ortho_50 @map("50_ortho")
+  keys_100 @map("100_keys")
+}
+
+enum visibility_enum {
+  public
+  private
+}

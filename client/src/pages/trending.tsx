@@ -6,13 +6,14 @@ import { useKeyboardPaginated } from "../util/db.jsx";
 import Header from "../components/Header.tsx";
 import Spinner from "../components/Spinner.tsx";
 
+
 function TrendingPage() {
-  const { data, status } = useKeyboardPaginated(1, 10);
+  const { data, isLoading } = useKeyboardPaginated(1, 10);
   return (
     <>
       <Meta />
       <Header />
-      {status === "idle" || status === "loading" ? (
+      {isLoading ? (
         <div className="container xl:max-w-7xl mx-auto py-10 px-4 lg:p-8">
           <div className={"w-full h-full"}>
             <Spinner variant={"dark"} />

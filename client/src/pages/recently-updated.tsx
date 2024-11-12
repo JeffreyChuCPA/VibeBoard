@@ -7,12 +7,12 @@ import KeyboardCardList from "../components/Keyboard/Card/KeyboardCardList.tsx";
 import Pagination from "../components/Pagination.tsx";
 
 function RecentlyUpdatedPage() {
-  const { data, status } = useKeyboardPaginated(1, 10);
+  const { data, isLoading } = useKeyboardPaginated(1, 10);
   return (
     <>
       <Meta />
       <Header />
-      {status === "idle" || status === "loading" ? (
+      {isLoading ? (
         <div className="container xl:max-w-7xl mx-auto py-10 px-4 lg:p-8">
           <div className={"w-full h-full"}>
             <Spinner variant={"dark"} />
