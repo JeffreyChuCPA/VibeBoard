@@ -1,4 +1,4 @@
-  <h3 align="center">Vibeboard - RGB Keyboard Lighting Sharing Platform</h3>
+  <h3 align="center">Vibeboard - RGB Keyboard Lighting Theme Platform</h3>
 
    <div align="center">
      A platform designed for creativity and inspiration, enabling users to design, share, and discover captivating RGB keyboard themes.
