@@ -1,3 +1,11 @@
+  <h3 align="center">Vibeboard - RGB Keyboard Lighting Sharing Platform</h3>
+
+   <div align="center">
+     A platform designed for creativity and inspiration, enabling users to design, share, and discover captivating RGB keyboard themes.
+    </div>
+
+
+
 https://www.loom.com/share/8086ac3357dc47e1b526894c506ca64f?sid=10cde085-1cf0-447d-a405-2f8dcb9fc8f4
 
 ## 👉 Get Started
@@ -19,7 +27,7 @@ VITE_FIREBASE_API_KEY=<FIREBASE_API_KEY>
 VITE_FIREBASE_AUTH_DOMAIN=<FIREBASE_AUTH_DOMAIN>
 VITE_FIREBASE_PROJECT_ID=<FIREBASE_PROJECT_ID>
 VITE_FIREBASE_STORAGE_BUCKET=<FIREBASE_STORAGE_BUCKET>
-VITE_FIREBASE_MESSAGING_SENDER_ID=<FIREBASE_STORAGE_BUCKET>
+VITE_FIREBASE_MESSAGING_SENDER_ID=<FIREBASE_MESSAGING_SENDER_ID>
 VITE_FIREBASE_APP_ID=<FIREBASE_APP_ID>
 VITE_FIREBASE_MEASUREMENT_ID=<FIREBASE_MEASUREMENT_ID>
 
