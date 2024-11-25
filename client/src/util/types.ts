@@ -83,3 +83,15 @@ export interface KeyBoardComponentProps {
   selectedColor: string;
   handleOnClick: (key_id: string) => void;
 }
+
+export interface KeyboardPosts {
+  id: string;
+  theme_name: string;
+  description: string;
+  keyboard_size: string;
+  keyboard_layout: string;
+  platform: string;
+  image_path: string;
+  owner: string;
+  created_at: string;
+}

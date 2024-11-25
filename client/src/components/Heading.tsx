@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { MagnifyingGlassIcon } from "@heroicons/react/24/solid";
 import TrendList from "./TrendList.tsx";
 import useMobile from "../hooks/useMobile.ts";
@@ -68,7 +68,19 @@ const collectionList = [
     href: "#",
   },
 ];
-export default function Heading() {
+export default function Heading({ onSearch }) {
+  const [searchQuery, setSearchQuery] = useState<string>("");
+
+  const handleInputChange = (e) => {
+    setSearchQuery(e.target.value);
+  };
+
+  const handleSearch = (e) => {
+    if (e.key === 'Enter' && onSearch) {
+      onSearch(searchQuery.trim())
+    }
+  }
+
   const isMobile = useMobile();
   return (
     <div className="bg-gray-50 dark:bg-gray-800/20 py-8">
@@ -101,6 +113,9 @@ export default function Heading() {
                   </div>
                   <input
                     id="search"
+                    value={searchQuery}
+                    onChange={handleInputChange}
+                    onKeyDown={handleSearch}
                     className="block w-full rounded-md border-0 bg-gray-800 focus:bg-gray-700/50 py-4 pl-10 pr-6 text-gray-300 focus:ring-1 focus:ring-gray focus:ring-offset-2 focus:ring-offset-gray-700 sm:text-sm sm:leading-6"
                     placeholder="Search"
                     type="search"

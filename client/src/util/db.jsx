@@ -64,6 +64,20 @@ export function useKeyboardByUser(auth, owner_id) {
   });
 }
 
+//Get keyboards by search params
+export function useKeyboardBySearch(query, page, size = 10) {
+  const { from, to } = getPagination(page, size);
+  return useQuery({
+    queryKey: ["keyboard", { query, page, size }],
+    queryFn: async () => 
+      await axios.get(`${API_BASE_URL}/keyboard_themes/keyboards?search=${query}`, {
+        params: { from, to }
+      })
+      .then(handle),
+      enabled: !!query,
+  })
+}
+
 // Get a keyboard by theme id
 export function useKeyboardByTheme(theme_id, withColors = false) {
   return useQuery({

@@ -17,3 +17,24 @@ export const sizeEnumMapping = (size: string): size_enum => {
   };
   return sizeMapping[size]; // returns null if no match
 }
+
+export const primaryColors = {
+  'red': ['red'],
+  'orange': ['orange', 'amber', 'yellow'],
+  'amber': ['orange', 'amber', 'yellow'],
+  'yellow': ['orange', 'amber', 'yellow'],
+  'green': ['lime', 'green', 'emerald'],
+  'lime': ['lime', 'green', 'emerald'],
+  'emerald': ['lime', 'green', 'emerald'],
+  'blue': ['teal', 'cyan', 'sky', 'blue'],
+  'teal': ['teal', 'cyan', 'sky', 'blue'],
+  'cyan': ['teal', 'cyan', 'sky', 'blue'],
+  'sky': ['teal', 'cyan', 'sky', 'blue'],
+  'purple': ['indigo', 'violet', 'purple', 'fuchsia'],
+  'indigo': ['indigo', 'violet', 'purple', 'fuchsia'],
+  'violet': ['indigo', 'violet', 'purple', 'fuchsia'],
+  'fuchsia': ['indigo', 'violet', 'purple', 'fuchsia'],
+  'pink': ['pink', 'rose'],
+  'rose': ['pink', 'rose'],
+}
+
