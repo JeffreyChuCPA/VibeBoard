@@ -1,7 +1,7 @@
 import express, { Request, Response, Router } from 'express';
 import verifyToken from '../middleware/auth';
-import { PrismaClient } from '@prisma/client';
-import { sizeEnumMapping } from '../util/helper';
+import { PrismaClient, Prisma } from '@prisma/client';
+import { primaryColors, sizeEnumMapping } from '../util/helper';
 import { KeyboardThemeKey } from '../util/types';
 
 const prisma = new PrismaClient();
@@ -59,26 +59,96 @@ router.get('/owner', verifyToken, async (req: Request, res: Response) => {
 });
 
 router.get('/keyboards', async (req: Request, res: Response) => {
-  const { from, to } = req.query;
+  const { from, to, search } = req.query;
 
-  if (!from || !to) {
+  if (!search && (!from || !to)) {
     res.status(400).json({ message: `No valid filters provided` });
     return;
   }
 
   try {
-    const publicKeyboards = await prisma.keyboard_themes.findMany({
-      select: {
-        id: true,
-        theme_name: true,
-        description: true,
-        keyboard_size: true,
-        keyboard_layout: true,
-        platform: true,
-        image_path: true,
-      },
-    });
-  
+    const skip = parseInt(from as string, 10)
+    const take = parseInt(to as string, 10) - skip
+    let publicKeyboards;
+    
+    const searchWords = search ? (search as string).split(' ') : []
+
+    const searchColors: string[] = [];
+
+    searchWords.forEach(word => {
+      if (word && word as string in primaryColors) {
+        searchColors.push(...primaryColors[word as keyof typeof primaryColors])
+      }
+    })
+
+    //search through keyboard_themes_keys table for theme_ids that contain the certain searched color
+    const themeIdsFromKeys = searchColors.length
+      ? await prisma.keyboard_theme_keys.findMany({
+        where: {
+          OR: searchColors.map( color => ({
+            key_label_color: {
+              contains: color,
+            },
+          }))
+        },
+        select: {
+          theme_id: true,
+        }
+      }) 
+      : []
+
+    const themeIds = [...new Set(themeIdsFromKeys.map(item => item.theme_id))] 
+
+    //search through keyboard_themes table for paginated keyboards that contain the certain keyword in title, else query paginated keyboards
+    if (search) {
+      publicKeyboards = await prisma.keyboard_themes.findMany({
+        where: {
+          OR: [
+            ...searchWords.map((word) => ({
+              theme_name: {
+                contains: word,
+                mode: Prisma.QueryMode.insensitive
+              },
+            })),
+            {
+              id: {
+                in: themeIds
+              }
+            }
+          ],
+        },
+        skip: skip,
+        take: take,
+        select: {
+          id: true,
+          theme_name: true,
+          description: true,
+          keyboard_size: true,
+          keyboard_layout: true,
+          platform: true,
+          image_path: true,
+          owner: true,
+          created_at: true,
+        },
+      });
+    } else {
+      publicKeyboards = await prisma.keyboard_themes.findMany({
+        skip: skip,
+        take: take,
+        select: {
+          id: true,
+          theme_name: true,
+          description: true,
+          keyboard_size: true,
+          keyboard_layout: true,
+          platform: true,
+          image_path: true,
+          owner: true,
+          created_at: true,
+        },
+      });
+    }
+
     const result = publicKeyboards.map((keyboard) => ({
       ...keyboard,
       image_path: keyboard.image_path
@@ -91,7 +161,7 @@ router.get('/keyboards', async (req: Request, res: Response) => {
 
   } catch (error) {
     console.error('Error occurred:', error)
-    res.status(500).json({ message: 'Internal Server Error'})
+    res.status(500).json({ message: 'Internal Server Error: Unable to fetch keyboard(s)'})
     return
   }
 });
